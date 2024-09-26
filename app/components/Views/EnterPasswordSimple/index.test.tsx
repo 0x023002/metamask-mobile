@@ -1,5 +1,3 @@
-jest.useFakeTimers();
-
 import React from 'react';
 import { shallow } from 'enzyme';
 import EnterPasswordSimple from './';
@@ -14,4 +12,15 @@ describe('EnterPasswordSimple', () => {
     );
     expect(wrapper).toMatchSnapshot();
   });
+<<<<<<< Updated upstream
+	it('should render correctly', () => {
+		const wrapper = shallow(
+			<NavigationContainer>
+				<EnterPasswordSimple route={{ params: {} }} />
+			</NavigationContainer>
+		);
+		expect(wrapper).toMatchSnapshot();
+	});
+=======
+>>>>>>> Stashed changes
 });

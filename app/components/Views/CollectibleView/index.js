@@ -36,6 +36,33 @@ const createStyles = (colors) =>
       ...fontStyles.bold,
     },
   });
+<<<<<<< Updated upstream
+	StyleSheet.create({
+		root: {
+			flex: 1,
+			backgroundColor: colors.background.default,
+		},
+		wrapper: {
+			flex: 0.9,
+		},
+		buttons: {
+			paddingVertical: 15,
+			flex: 0.1,
+			height: 4,
+		},
+		button: {
+			marginHorizontal: 16,
+			flexDirection: 'row',
+		},
+		buttonText: {
+			marginLeft: 8,
+			fontSize: 15,
+			color: colors.primary.inverse,
+			...fontStyles.bold,
+		},
+	});
+=======
+>>>>>>> Stashed changes
 
 /**
  * View that displays a specific collectible asset
@@ -56,6 +83,128 @@ class CollectibleView extends PureComponent {
      */
     route: PropTypes.object,
   };
+<<<<<<< Updated upstream
+
+  updateNavBar = () => {
+    const { navigation, route } = this.props;
+    const colors = this.context.colors || mockTheme.colors;
+    getNetworkNavbarOptions(
+      route.params?.contractName ?? '',
+      false,
+      navigation,
+      colors,
+    );
+  };
+
+  componentDidMount = () => {
+    this.updateNavBar();
+  };
+
+  componentDidUpdate = () => {
+    this.updateNavBar();
+  };
+	updateNavBar = () => {
+		const { navigation, route } = this.props;
+		const colors = this.context.colors || mockTheme.colors;
+		getNetworkNavbarOptions(route.params?.contractName ?? '', false, navigation, colors);
+	};
+
+	componentDidMount = () => {
+		this.updateNavBar();
+	};
+
+	componentDidUpdate = () => {
+		this.updateNavBar();
+	};
+
+  onSend = async () => {
+    const {
+      route: { params },
+    } = this.props;
+    this.props.newAssetTransaction(params);
+    this.props.navigation.navigate('SendFlowView');
+  };
+
+  render() {
+    const {
+      route: { params },
+      navigation,
+    } = this.props;
+    const collectible = params;
+    const colors = this.context.colors || mockTheme.colors;
+    const styles = createStyles(colors);
+
+    const lowerAddress = collectible.address.toLowerCase();
+    const tradable =
+      lowerAddress in collectiblesTransferInformation
+        ? collectiblesTransferInformation[lowerAddress].tradable
+        : true;
+
+    return (
+      <SafeAreaView style={styles.root}>
+        <ScrollView style={styles.wrapper} ref={this.scrollViewRef}>
+          <View style={styles.assetOverviewWrapper}>
+            <CollectibleOverview
+              navigation={navigation}
+              collectible={collectible}
+            />
+          </View>
+        </ScrollView>
+        {tradable && (
+          <View style={styles.buttons}>
+            <StyledButton
+              type={'confirm'}
+              onPress={this.onSend}
+              containerStyle={styles.button}
+              childGroupStyle={styles.flexRow}
+            >
+              <Text style={styles.buttonText}>
+                {strings('asset_overview.send_button').toUpperCase()}
+              </Text>
+            </StyledButton>
+          </View>
+        )}
+      </SafeAreaView>
+    );
+  }
+	render() {
+		const {
+			route: { params },
+			navigation,
+		} = this.props;
+		const collectible = params;
+		const colors = this.context.colors || mockTheme.colors;
+		const styles = createStyles(colors);
+
+		const lowerAddress = collectible.address.toLowerCase();
+		const tradable =
+			lowerAddress in collectiblesTransferInformation
+				? collectiblesTransferInformation[lowerAddress].tradable
+				: true;
+
+		return (
+			<SafeAreaView style={styles.root}>
+				<ScrollView style={styles.wrapper} ref={this.scrollViewRef}>
+					<View style={styles.assetOverviewWrapper} testID={'asset'}>
+						<CollectibleOverview navigation={navigation} collectible={collectible} />
+					</View>
+				</ScrollView>
+				{tradable && (
+					<View style={styles.buttons}>
+						<StyledButton
+							type={'confirm'}
+							onPress={this.onSend}
+							containerStyle={styles.button}
+							childGroupStyle={styles.flexRow}
+						>
+							<Text style={styles.buttonText}>{strings('asset_overview.send_button').toUpperCase()}</Text>
+						</StyledButton>
+					</View>
+				)}
+			</SafeAreaView>
+		);
+	}
+=======
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
@@ -102,7 +251,7 @@ class CollectibleView extends PureComponent {
     return (
       <SafeAreaView style={styles.root}>
         <ScrollView style={styles.wrapper} ref={this.scrollViewRef}>
-          <View style={styles.assetOverviewWrapper} testID={'asset'}>
+          <View style={styles.assetOverviewWrapper}>
             <CollectibleOverview
               navigation={navigation}
               collectible={collectible}
@@ -126,6 +275,7 @@ class CollectibleView extends PureComponent {
       </SafeAreaView>
     );
   }
+>>>>>>> Stashed changes
 }
 
 CollectibleView.contextType = ThemeContext;

@@ -1,5 +1,3 @@
-import { NETWORKS_CHAIN_ID } from './network';
-
 /**
  * @enum {string}
  */
@@ -39,26 +37,18 @@ export const PAYMENT_CATEGORY = {
   MULTIPLE: 'Multiple Options',
 };
 
-export const NETWORKS_NAMES = {
-  [NETWORKS_CHAIN_ID.MAINNET]: 'Ethereum',
-  [NETWORKS_CHAIN_ID.OPTIMISM]: 'Optimism',
-  [NETWORKS_CHAIN_ID.KOVAN]: 'Kovan',
-  [NETWORKS_CHAIN_ID.BSC]: 'BNB Smart Chain',
-  [NETWORKS_CHAIN_ID.POLYGON]: 'Polygon',
-  [NETWORKS_CHAIN_ID.FANTOM]: 'Fantom',
-  [NETWORKS_CHAIN_ID.ARBITRUM]: 'Arbitrum',
-  [NETWORKS_CHAIN_ID.AVAXCCHAIN]: 'Avalanche',
-  [NETWORKS_CHAIN_ID.CELO]: 'Celo',
-  [NETWORKS_CHAIN_ID.HARMONY]: 'Harmony',
-};
+/**
+ * @enum {string}
+ */
 
-export const FORMATTED_NETWORK_NAMES = {
-  [NETWORKS_CHAIN_ID.MAINNET]: 'Ethereum Mainnet',
-  [NETWORKS_CHAIN_ID.BSC]: 'Binance Smart Chain',
-  [NETWORKS_CHAIN_ID.POLYGON]: 'Polygon',
-  [NETWORKS_CHAIN_ID.AVAXCCHAIN]: 'Avalanche',
-  [NETWORKS_CHAIN_ID.CELO]: 'Celo',
-  [NETWORKS_CHAIN_ID.FANTOM]: 'Fantom',
+export const NETWORKS_CHAIN_ID = {
+  MAINNET: '1',
+  KOVAN: '42',
+  BSC: '56',
+  POLYGON: '137',
+  AVAXCCHAIN: '43114',
+  CELO: '42220',
+  FANTOM: '250',
 };
 
 const TRANSAK_NETWORK_NAMES = {
@@ -159,5 +149,3 @@ export const MOONPAY_NETWORK_PARAMETERS = {
   [NETWORKS_CHAIN_ID.AVAXCCHAIN]: ['avax_cchain', 'avax_cchain'],
   [NETWORKS_CHAIN_ID.CELO]: ['celo', 'celo,cusd'],
 };
-
-export const NATIVE_ADDRESS = '0x0000000000000000000000000000000000000000';

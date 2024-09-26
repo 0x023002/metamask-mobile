@@ -2,7 +2,8 @@ import { addHexPrefix, toChecksumAddress, BN } from 'ethereumjs-util';
 import { rawEncode, rawDecode } from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 import humanizeDuration from 'humanize-duration';
-import { util } from '@metamask/controllers';
+import { query, isSmartContractCode } from '@metamask/controller-utils';
+import { isEIP1559Transaction } from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller';
 import Engine from '../../core/Engine';
 import I18n, { strings } from '../../../locales/i18n';
@@ -17,6 +18,17 @@ import {
   weiToFiat,
   weiToFiatNumber,
   toTokenMinimalUnit,
+<<<<<<< Updated upstream
+	balanceToFiatNumber,
+	BNToHex,
+	hexToBN,
+	renderFiatAddition,
+	renderFromTokenMinimalUnit,
+	renderFromWei,
+	weiToFiat,
+	weiToFiatNumber,
+=======
+>>>>>>> Stashed changes
 } from '../number';
 import AppConstants from '../../core/AppConstants';
 import { isMainnetByChainId } from '../networks';
@@ -31,6 +43,7 @@ import {
   decGWEIToHexWEI,
   getValueFromWeiHex,
   formatETHFee,
+  sumHexWEIs,
 } from '../conversions';
 import {
   addEth,
@@ -73,6 +86,7 @@ export const TRANSACTION_TYPES = {
   RECEIVED_TOKEN: 'transaction_received_token',
   RECEIVED_COLLECTIBLE: 'transaction_received_collectible',
   SITE_INTERACTION: 'transaction_site_interaction',
+  SWAPS_TRANSACTION: 'swaps_transaction',
   APPROVE: 'transaction_approve',
 };
 
@@ -124,9 +138,9 @@ const actionKeys = {
  * @param {Object} opts - Optional asset parameters
  * @returns {String} - String containing the generated transfer data
  */
-export function generateTransferData(type, opts) {
+export function generateTransferData(type = undefined, opts = {}) {
   if (!type) {
-    throw new Error('[transactions] type must be defined');
+    throw new TypeError('[transactions] type must be defined');
   }
   switch (type) {
     case 'transfer':
@@ -203,7 +217,7 @@ const BASE = 4 * 16;
  *
  * @param {String} type - Method to use to generate data
  * @param {String} data - Data to decode
- * @returns {Object} - Object containing the decoded transfer data
+ * @returns {Array} - Object containing the decoded transfer data
  */
 export function decodeTransferData(type, data) {
   switch (type) {
@@ -242,10 +256,15 @@ export function decodeTransferData(type, data) {
 }
 
 /**
+ * @typedef {Object} MethodData
+ * @property {string} name - The method name
+ */
+
+/**
  * Returns method data object for a transaction dat
  *
  * @param {string} data - Transaction data
- * @returns {object} - Method data object containing the name if is valid
+ * @returns {MethodData} - Method data object containing the name if is valid
  */
 export async function getMethodData(data) {
   if (data.length < 10) return {};
@@ -279,7 +298,7 @@ export async function getMethodData(data) {
  *
  * @param {string} address - Ethereum address
  * @param {string} chainId - Current chainId
- * @returns {boolean} - Whether the given address is a contract
+ * @returns {Promise<boolean>} - Whether the given address is a contract
  */
 export async function isSmartContractAddress(address, chainId) {
   if (!address) return false;
@@ -293,9 +312,9 @@ export async function isSmartContractAddress(address, chainId) {
   }
   const { TransactionController } = Engine.context;
   const code = address
-    ? await util.query(TransactionController.ethQuery, 'getCode', [address])
+    ? await query(TransactionController.ethQuery, 'getCode', [address])
     : undefined;
-  const isSmartContract = util.isSmartContractCode(code);
+  const isSmartContract = isSmartContractCode(code);
   return isSmartContract;
 }
 
@@ -321,6 +340,20 @@ export async function isCollectibleAddress(address, tokenId) {
   const isCollectibleAddress = ownerOf && ownerOf !== '0x';
   CollectibleAddresses.cache[address] = isCollectibleAddress;
   return isCollectibleAddress;
+<<<<<<< Updated upstream
+	const cache = CollectibleAddresses.cache[address];
+	if (cache) {
+		return Promise.resolve(cache);
+	}
+	const { AssetsContractController } = Engine.context;
+	// Hack to know if the address is a collectible smart contract
+	// for now this method is called from tx element so we have the respective 'tokenId'
+	const ownerOf = await AssetsContractController.getERC721OwnerOf(address, tokenId);
+	const isCollectibleAddress = ownerOf && ownerOf !== '0x';
+	CollectibleAddresses.cache[address] = isCollectibleAddress;
+	return isCollectibleAddress;
+=======
+>>>>>>> Stashed changes
 }
 
 /**
@@ -402,6 +435,42 @@ export async function getActionKey(tx, selectedAddress, ticker, chainId) {
   }
 
   return actionKey;
+<<<<<<< Updated upstream
+	const actionKey = await getTransactionActionKey(tx, chainId);
+	if (actionKey === SEND_ETHER_ACTION_KEY) {
+		let currencySymbol = ticker;
+
+		if (tx?.isTransfer) {
+			// Third party sending wrong token symbol
+			if (tx.transferInformation.contractAddress === SAI_ADDRESS.toLowerCase()) {
+				tx.transferInformation.symbol = 'SAI';
+			}
+			currencySymbol = tx.transferInformation.symbol;
+		}
+
+		const incoming = safeToChecksumAddress(tx.transaction.to) === selectedAddress;
+		const selfSent = incoming && safeToChecksumAddress(tx.transaction.from) === selectedAddress;
+		return incoming
+			? selfSent
+				? currencySymbol
+					? strings('transactions.self_sent_unit', { unit: currencySymbol })
+					: strings('transactions.self_sent_ether')
+				: currencySymbol
+				? strings('transactions.received_unit', { unit: currencySymbol })
+				: strings('transactions.received_ether')
+			: currencySymbol
+			? strings('transactions.sent_unit', { unit: currencySymbol })
+			: strings('transactions.sent_ether');
+	}
+	const transactionActionKey = actionKeys[actionKey];
+
+	if (transactionActionKey) {
+		return transactionActionKey;
+	}
+
+	return actionKey;
+=======
+>>>>>>> Stashed changes
 }
 
 /**
@@ -441,7 +510,7 @@ export function getEther(ticker) {
     name: 'Ether',
     address: '',
     symbol: ticker || strings('unit.eth'),
-    logo: '../images/eth-logo.png',
+    logo: '../images/eth-logo-new.png',
     isETH: true,
   };
 }
@@ -451,7 +520,7 @@ export function getEther(ticker) {
  *
  * @param {object} config
  * @param {object} config.addressBook - Object of address book entries
- * @param {string} config.network - network id
+ * @param {string} config.chainId - network id
  * @param {string} config.toAddress - hex address of tx recipient
  * @param {object} config.identities - object of identities
  * @param {string} config.ensRecipient - name of ens recipient
@@ -459,7 +528,7 @@ export function getEther(ticker) {
  */
 export function getTransactionToName({
   addressBook,
-  network,
+  chainId,
   toAddress,
   identities,
   ensRecipient,
@@ -468,7 +537,7 @@ export function getTransactionToName({
     return ensRecipient;
   }
 
-  const networkAddressBook = addressBook[network];
+  const networkAddressBook = addressBook[chainId];
   const checksummedToAddress = toChecksumAddress(toAddress);
 
   const transactionToName =
@@ -498,7 +567,9 @@ export function addAccountTimeFlagFilter(
 }
 
 export function getNormalizedTxState(state) {
-  return { ...state.transaction, ...state.transaction.transaction };
+  return state.transaction
+    ? { ...state.transaction, ...state.transaction.transaction }
+    : undefined;
 }
 
 export const getActiveTabUrl = ({ browser = {} }) =>
@@ -649,7 +720,7 @@ export const calculateEIP1559Times = ({
 }) => {
   let timeEstimate = strings('times_eip1559.unknown');
   let timeEstimateColor = 'grey';
-  let timeEstimateId = AppConstants.GAS_TIMES.UNKNOWN;
+  let timeEstimateId;
 
   const LOW = AppConstants.GAS_OPTIONS.LOW;
   const MEDIUM = AppConstants.GAS_OPTIONS.MEDIUM;
@@ -715,6 +786,20 @@ export const calculateEIP1559Times = ({
         hasTime = true;
       }
 
+      if (
+        Number(suggestedMaxPriorityFeePerGas) >=
+        Number(gasFeeEstimates[HIGH].suggestedMaxPriorityFeePerGas)
+      ) {
+        timeEstimate = `${strings(
+          'times_eip1559.likely_in',
+        )} ${humanizeDuration(
+          gasFeeEstimates[HIGH].minWaitTimeEstimate,
+          timeParams,
+        )}`;
+        timeEstimateColor = 'orange';
+        timeEstimateId = AppConstants.GAS_TIMES.VERY_LIKELY;
+      }
+
       if (hasTime) {
         return { timeEstimate, timeEstimateColor, timeEstimateId };
       }
@@ -775,6 +860,9 @@ export const calculateEIP1559Times = ({
     }
   } catch (error) {
     Logger.log('ERROR ESTIMATING TIME', error);
+  }
+  if (!timeEstimateId) {
+    timeEstimate = AppConstants.GAS_TIMES.UNKNOWN;
   }
 
   return { timeEstimate, timeEstimateColor, timeEstimateId };
@@ -1175,15 +1263,21 @@ export const parseTransactionLegacy = (
     },
     ticker,
     selectedGasFee,
+    multiLayerL1FeeTotal,
   },
   { onlyGas } = {},
 ) => {
   const gasLimit = new BN(selectedGasFee.suggestedGasLimit);
   const gasLimitHex = BNToHex(new BN(selectedGasFee.suggestedGasLimit));
 
-  const weiTransactionFee =
+  let weiTransactionFee =
     gasLimit &&
     gasLimit.mul(hexToBN(decGWEIToHexWEI(selectedGasFee.suggestedGasPrice)));
+  if (multiLayerL1FeeTotal) {
+    weiTransactionFee = hexToBN(
+      sumHexWEIs([BNToHex(weiTransactionFee), multiLayerL1FeeTotal]),
+    );
+  }
 
   const suggestedGasPriceHex = decGWEIToHexWEI(
     selectedGasFee.suggestedGasPrice,
@@ -1198,7 +1292,7 @@ export const parseTransactionLegacy = (
   const parsedTicker = getTicker(ticker);
   const transactionFee = `${renderFromWei(weiTransactionFee)} ${parsedTicker}`;
 
-  const totalHex = valueBN.add(hexToBN(weiTransactionFee));
+  const totalHex = valueBN.add(weiTransactionFee);
 
   if (onlyGas) {
     return {
@@ -1278,6 +1372,76 @@ export const parseTransactionLegacy = (
     suggestedGasLimitHex: gasLimitHex,
     totalHex,
   };
+<<<<<<< Updated upstream
+	const gasLimit = new BN(selectedGasFee.suggestedGasLimit);
+	const gasLimitHex = BNToHex(new BN(selectedGasFee.suggestedGasLimit));
+
+	const weiTransactionFee = gasLimit && gasLimit.mul(hexToBN(decGWEIToHexWEI(selectedGasFee.suggestedGasPrice)));
+
+	const suggestedGasPriceHex = decGWEIToHexWEI(selectedGasFee.suggestedGasPrice);
+
+	const valueBN = value ? hexToBN(value) : hexToBN('0x0');
+	const transactionFeeFiat = weiToFiat(weiTransactionFee, conversionRate, currentCurrency);
+	const parsedTicker = getTicker(ticker);
+	const transactionFee = `${renderFromWei(weiTransactionFee)} ${parsedTicker}`;
+
+	const totalHex = valueBN.add(hexToBN(weiTransactionFee));
+
+	if (onlyGas) {
+		return {
+			transactionFeeFiat,
+			transactionFee,
+			suggestedGasPrice: selectedGasFee.suggestedGasPrice,
+			suggestedGasPriceHex,
+			suggestedGasLimit: selectedGasFee.suggestedGasLimit,
+			suggestedGasLimitHex: gasLimitHex,
+			totalHex,
+		};
+	}
+
+	let transactionTotalAmount, transactionTotalAmountFiat;
+
+	if (selectedAsset.isETH) {
+		const transactionTotalAmountBN = weiTransactionFee && weiTransactionFee.add(valueBN);
+		transactionTotalAmount = `${renderFromWei(transactionTotalAmountBN)} ${parsedTicker}`;
+		transactionTotalAmountFiat = weiToFiat(transactionTotalAmountBN, conversionRate, currentCurrency);
+	} else if (selectedAsset.tokenId) {
+		const transactionTotalAmountBN = weiTransactionFee && weiTransactionFee.add(valueBN);
+		transactionTotalAmount = `${renderFromWei(weiTransactionFee)} ${parsedTicker}`;
+
+		transactionTotalAmountFiat = weiToFiat(transactionTotalAmountBN, conversionRate, currentCurrency);
+	} else {
+		const { address, symbol = 'ERC20', decimals } = selectedAsset;
+
+		const [, , rawAmount] = decodeTransferData('transfer', data);
+		const rawAmountString = parseInt(rawAmount, 16).toLocaleString('fullwide', { useGrouping: false });
+		const transferValue = renderFromTokenMinimalUnit(rawAmountString, decimals);
+		const transactionValue = `${transferValue} ${symbol}`;
+		const exchangeRate = contractExchangeRates[address];
+		const transactionFeeFiatNumber = weiToFiatNumber(weiTransactionFee, conversionRate);
+
+		const transactionValueFiatNumber = balanceToFiatNumber(transferValue, conversionRate, exchangeRate);
+		transactionTotalAmount = `${transactionValue} + ${renderFromWei(weiTransactionFee)} ${parsedTicker}`;
+		transactionTotalAmountFiat = renderFiatAddition(
+			transactionValueFiatNumber,
+			transactionFeeFiatNumber,
+			currentCurrency
+		);
+	}
+
+	return {
+		transactionFeeFiat,
+		transactionFee,
+		transactionTotalAmount,
+		transactionTotalAmountFiat,
+		suggestedGasPrice: selectedGasFee.suggestedGasPrice,
+		suggestedGasPriceHex,
+		suggestedGasLimit: selectedGasFee.suggestedGasLimit,
+		suggestedGasLimitHex: gasLimitHex,
+		totalHex,
+	};
+=======
+>>>>>>> Stashed changes
 };
 
 /**
@@ -1296,7 +1460,7 @@ export function validateTransactionActionBalance(transaction, rate, accounts) {
     let gasPrice = transaction.transaction.gasPrice;
     const transactionToCheck = transaction.transaction;
 
-    if (util.isEIP1559Transaction(transactionToCheck)) {
+    if (isEIP1559Transaction(transactionToCheck)) {
       gasPrice = transactionToCheck.maxFeePerGas;
     }
 

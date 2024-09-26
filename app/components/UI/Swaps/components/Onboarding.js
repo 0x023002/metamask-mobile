@@ -9,12 +9,29 @@ import {
   Platform,
   UIManager,
 } from 'react-native';
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+=======
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+>>>>>>> Stashed changes
+=======
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+>>>>>>> upstream/testflight/4754-permission-system
 import { useNavigation } from '@react-navigation/native';
 import { strings } from '../../../../../locales/i18n';
 import Device from '../../../../util/device';
 import Text from '../../../Base/Text';
 import StyledButton from '../../StyledButton';
+<<<<<<< Updated upstream
+import {
+  useAppThemeFromContext,
+  mockTheme,
+  useAssetFromTheme,
+} from '../../../../util/theme';
+import { useAppThemeFromContext, mockTheme, useAssetFromTheme } from '../../../../util/theme';
+=======
 import { useTheme, useAssetFromTheme } from '../../../../util/theme';
+>>>>>>> Stashed changes
 
 /* eslint-disable import/no-commonjs */
 const onboardingDeviceImage = require('../../../../images/swaps_onboard_device.png');
@@ -22,7 +39,15 @@ const swapsAggregatorsLight = require('../../../../images/swaps_aggs-light.png')
 const swapsAggregatorsDark = require('../../../../images/swaps_aggs-dark.png');
 /* eslint-enable import/no-commonjs */
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
 const createStyles = (colors) =>
+=======
+const createStyles = (colors, bottomInset) =>
+>>>>>>> Stashed changes
+=======
+const createStyles = (colors, bottomInset) =>
+>>>>>>> upstream/testflight/4754-permission-system
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -57,11 +82,61 @@ const createStyles = (colors) =>
     },
     actionButtonWrapper: {
       width: '100%',
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+=======
+      paddingBottom: bottomInset,
+>>>>>>> Stashed changes
+=======
+      paddingBottom: bottomInset,
+>>>>>>> upstream/testflight/4754-permission-system
     },
     actionButton: {
       marginVertical: 10,
     },
   });
+<<<<<<< Updated upstream
+	StyleSheet.create({
+		screen: {
+			flex: 1,
+			paddingHorizontal: 25,
+			justifyContent: 'space-between',
+			alignItems: 'center',
+		},
+		content: {
+			flex: 1,
+			justifyContent: 'center',
+			marginVertical: 14,
+		},
+		images: {
+			alignItems: 'center',
+		},
+		title: {
+			fontSize: Device.isSmallDevice() ? 20 : 24,
+			marginHorizontal: 15,
+			marginBottom: Device.isSmallDevice() ? 16 : 24,
+			color: colors.text.default,
+		},
+		aggregatorsImage: {
+			marginVertical: 14,
+			width: Device.isSmallDevice() ? 230 : 300,
+			height: Device.isSmallDevice() ? 85 : 110,
+		},
+		learnMore: {
+			marginVertical: 14,
+		},
+		learnMoreLink: {
+			paddingVertical: Device.isSmallDevice() ? 4 : 8,
+		},
+		actionButtonWrapper: {
+			width: '100%',
+		},
+		actionButton: {
+			marginVertical: 10,
+		},
+	});
+=======
+>>>>>>> Stashed changes
 
 if (
   Platform.OS === 'android' &&
@@ -72,12 +147,36 @@ if (
 
 function Onboarding({ setHasOnboarded }) {
   const navigation = useNavigation();
-  const { colors } = useTheme();
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+  const { colors } = useAppThemeFromContext() || mockTheme;
   const styles = createStyles(colors);
+=======
+  const { colors } = useTheme();
+  const { bottom: bottomInset } = useSafeAreaInsets();
+  const styles = createStyles(colors, bottomInset);
+>>>>>>> Stashed changes
+=======
+  const { colors } = useTheme();
+  const { bottom: bottomInset } = useSafeAreaInsets();
+  const styles = createStyles(colors, bottomInset);
+>>>>>>> upstream/testflight/4754-permission-system
   const swapsAggregators = useAssetFromTheme(
     swapsAggregatorsLight,
     swapsAggregatorsDark,
   );
+<<<<<<< Updated upstream
+	const navigation = useNavigation();
+	const { colors } = useAppThemeFromContext() || mockTheme;
+	const styles = createStyles(colors);
+	const swapsAggregators = useAssetFromTheme(swapsAggregatorsLight, swapsAggregatorsDark);
+
+	const handleStartSwapping = useCallback(() => {
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		setHasOnboarded(true);
+	}, [setHasOnboarded]);
+=======
+>>>>>>> Stashed changes
 
   const handleStartSwapping = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

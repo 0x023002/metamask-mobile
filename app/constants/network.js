@@ -1,12 +1,16 @@
+import { NetworkType } from '@metamask/controller-utils';
+
 export const MAINNET = 'mainnet';
 export const HOMESTEAD = 'homestead';
-export const ROPSTEN = 'ropsten';
-export const KOVAN = 'kovan';
-export const RINKEBY = 'rinkeby';
 export const GOERLI = 'goerli';
-export const RPC = 'rpc';
+export const SEPOLIA = 'sepolia';
+export const LINEA_GOERLI = 'linea-goerli';
+export const LINEA_MAINNET = 'linea-mainnet';
+export const RPC = NetworkType.rpc;
 export const NO_RPC_BLOCK_EXPLORER = 'NO_BLOCK_EXPLORER';
 export const PRIVATENETWORK = 'PRIVATENETWORK';
+export const DEFAULT_MAINNET_CUSTOM_NAME = 'Ethereum Main Custom';
+export const IPFS_DEFAULT_GATEWAY_URL = 'https://cloudflare-ipfs.com/ipfs/';
 
 /**
  * @enum {string}
@@ -14,12 +18,17 @@ export const PRIVATENETWORK = 'PRIVATENETWORK';
 export const NETWORKS_CHAIN_ID = {
   MAINNET: '1',
   OPTIMISM: '10',
-  KOVAN: '42',
   BSC: '56',
   POLYGON: '137',
   FANTOM: '250',
+  BASE: '8453',
   ARBITRUM: '42161',
   AVAXCCHAIN: '43114',
   CELO: '42220',
   HARMONY: '1666600000',
+  SEPOLIA: '11155111',
+  LINEA_GOERLI: '59140',
+  GOERLI: '5',
+  LINEA_MAINNET: '59144',
+  ZKSYNC_ERA: '324',
 };

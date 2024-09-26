@@ -5,6 +5,52 @@ import { fontStyles } from '../../../../styles/common';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
 
+<<<<<<< Updated upstream
+const styles = StyleSheet.create({
+	modalView: {
+		flexDirection: 'column',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginHorizontal: 24,
+		paddingVertical: 24
+	},
+	feeWrapper: {
+		backgroundColor: colors.grey000,
+		textAlign: 'center',
+		padding: 16,
+		borderRadius: 8
+	},
+	fee: {
+		...fontStyles.bold,
+		fontSize: 16,
+		textAlign: 'center'
+	},
+	modalText: {
+		...fontStyles.normal,
+		fontSize: 14,
+		textAlign: 'center',
+		paddingVertical: 8
+	},
+	modalTitle: {
+		...fontStyles.bold,
+		fontSize: 22,
+		textAlign: 'center'
+	},
+	gasTitle: {
+		...fontStyles.bold,
+		fontSize: 16,
+		textAlign: 'center',
+		marginVertical: 8
+	},
+	warningText: {
+		...fontStyles.normal,
+		fontSize: 12,
+		color: colors.red,
+		paddingVertical: 8,
+		textAlign: 'center'
+	}
+});
+=======
 const createStyles = (colors) =>
   StyleSheet.create({
     modalView: {
@@ -54,6 +100,7 @@ const createStyles = (colors) =>
       textAlign: 'center',
     },
   });
+>>>>>>> Stashed changes
 
 /**
  * View that renders a modal to be used for speed up or cancel transaction modal

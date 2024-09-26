@@ -20,6 +20,9 @@ export enum ACTIONS {
   FOCUS = 'focus',
   WC = 'wc',
   CONNECT = 'connect',
+  ANDROID_SDK = 'bind',
+  BUY_CRYPTO = 'buy-crypto',
+  SELL_CRYPTO = 'sell-crypto',
   EMPTY = '',
 }
 
@@ -27,7 +30,22 @@ export const PREFIXES = {
   [ACTIONS.DAPP]: 'https://',
   [ACTIONS.SEND]: 'ethereum:',
   [ACTIONS.APPROVE]: 'ethereum:',
+<<<<<<< Updated upstream
+  [ACTIONS.PAYMENT]: '',
   [ACTIONS.FOCUS]: '',
+  [ACTIONS.WC]: '',
+  [ACTIONS.CONNECT]: '',
+  [ACTIONS.ANDROID_SDK]: '',
+  [ACTIONS.BUY_CRYPTO]: '',
+=======
+  [ACTIONS.FOCUS]: '',
+>>>>>>> Stashed changes
   [ACTIONS.EMPTY]: '',
+  [ACTIONS.PAYMENT]: '',
+  [ACTIONS.WC]: '',
+  [ACTIONS.CONNECT]: '',
+  [ACTIONS.ANDROID_SDK]: '',
+  [ACTIONS.BUY_CRYPTO]: '',
+  [ACTIONS.SELL_CRYPTO]: '',
   METAMASK: 'metamask://',
 };

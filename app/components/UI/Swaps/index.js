@@ -28,7 +28,7 @@ import {
 } from '../../../util/number';
 import { safeToChecksumAddress } from '../../../util/address';
 import { swapsUtils } from '@metamask/swaps-controller';
-import { ANALYTICS_EVENT_OPTS } from '../../../util/analytics';
+import { MetaMetricsEvents } from '../../../core/Analytics';
 
 import {
   setSwapsHasOnboarded,
@@ -52,12 +52,11 @@ import {
 } from './utils';
 import { getSwapsAmountNavbar } from '../Navbar';
 
-import Onboarding from './components/Onboarding';
 import useModalHandler from '../../Base/hooks/useModalHandler';
 import Text from '../../Base/Text';
 import Keypad from '../../Base/Keypad';
 import StyledButton from '../StyledButton';
-import ScreenView from '../FiatOrders/components/ScreenView';
+import ScreenView from '../../Base/ScreenView';
 import ActionAlert from './components/ActionAlert';
 import TokenSelectButton from './components/TokenSelectButton';
 import TokenSelectModal from './components/TokenSelectModal';
@@ -69,6 +68,25 @@ import { toLowerCaseEquals } from '../../../util/general';
 import { AlertType } from '../../Base/Alert';
 import { isZero, gte } from '../../../util/lodash';
 import { useTheme } from '../../../util/theme';
+import {
+  selectChainId,
+  selectNetworkConfigurations,
+  selectProviderConfig,
+} from '../../../selectors/networkController';
+import {
+  selectConversionRate,
+  selectCurrentCurrency,
+} from '../../../selectors/currencyRateController';
+import { selectContractExchangeRates } from '../../../selectors/tokenRatesController';
+import { selectAccounts } from '../../../selectors/accountTrackerController';
+import { selectContractBalances } from '../../../selectors/tokenBalancesController';
+import { selectSelectedAddress } from '../../../selectors/preferencesController';
+import AccountSelector from '../Ramp/common/components/AccountSelector';
+import {
+  SWAP_SOURCE_TOKEN,
+  SWAP_DEST_TOKEN,
+  SWAP_MAX_SLIPPAGE,
+} from '../../../../wdio/screen-objects/testIDs/Screens/QuoteView.js';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -81,6 +99,11 @@ const createStyles = (colors) =>
     content: {
       flexGrow: 1,
       justifyContent: 'center',
+    },
+    accountSelector: {
+      width: '100%',
+      alignItems: 'center',
+      marginBottom: 16,
     },
     keypad: {
       flexGrow: 1,
@@ -164,8 +187,8 @@ function SwapsAmountView({
   accounts,
   selectedAddress,
   chainId,
-  provider,
-  frequentRpcList,
+  providerConfig,
+  networkConfigurations,
   balances,
   tokensWithBalance,
   tokensTopAssets,
@@ -181,8 +204,12 @@ function SwapsAmountView({
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const explorer = useBlockExplorer(provider, frequentRpcList);
+  const previousSelectedAddress = useRef();
+
+  const explorer = useBlockExplorer(providerConfig, networkConfigurations);
   const initialSource = route.params?.sourceToken ?? SWAPS_NATIVE_ADDRESS;
+  const initialDestination = route.params?.destinationToken;
+
   const [amount, setAmount] = useState('0');
   const [slippage, setSlippage] = useState(AppConstants.SWAPS.DEFAULT_SLIPPAGE);
   const [isInitialLoadingTokens, setInitialLoadingTokens] = useState(false);
@@ -194,13 +221,18 @@ function SwapsAmountView({
       ),
     ),
   );
+  const [isDestinationSet, setIsDestinationSet] = useState(false);
 
   const [sourceToken, setSourceToken] = useState(() =>
     swapsTokens?.find((token) =>
       toLowerCaseEquals(token.address, initialSource),
     ),
   );
-  const [destinationToken, setDestinationToken] = useState(null);
+  const [destinationToken, setDestinationToken] = useState(
+    swapsTokens?.find((token) =>
+      toLowerCaseEquals(token.address, initialDestination),
+    ),
+  );
   const [hasDismissedTokenAlert, setHasDismissedTokenAlert] = useState(true);
   const [contractBalance, setContractBalance] = useState(null);
   const [contractBalanceAsUnits, setContractBalanceAsUnits] = useState(
@@ -254,11 +286,11 @@ function SwapsAmountView({
               chain_id: chainId,
             };
             Analytics.trackEventWithParameters(
-              ANALYTICS_EVENT_OPTS.SWAPS_OPENED,
+              MetaMetricsEvents.SWAPS_OPENED,
               {},
             );
             Analytics.trackEventWithParameters(
-              ANALYTICS_EVENT_OPTS.SWAPS_OPENED,
+              MetaMetricsEvents.SWAPS_OPENED,
               parameters,
               true,
             );
@@ -319,14 +351,15 @@ function SwapsAmountView({
     })();
   }, [swapsControllerTokens, swapsTokens]);
 
+  const canSetAnInitialSourceToken =
+    !isSourceSet &&
+    initialSource &&
+    swapsControllerTokens &&
+    swapsTokens?.length > 0 &&
+    !sourceToken;
+
   useEffect(() => {
-    if (
-      !isSourceSet &&
-      initialSource &&
-      swapsControllerTokens &&
-      swapsTokens?.length > 0 &&
-      !sourceToken
-    ) {
+    if (canSetAnInitialSourceToken) {
       setIsSourceSet(true);
       setSourceToken(
         swapsTokens.find((token) =>
@@ -334,13 +367,25 @@ function SwapsAmountView({
         ),
       );
     }
-  }, [
-    initialSource,
-    isSourceSet,
-    sourceToken,
-    swapsControllerTokens,
-    swapsTokens,
-  ]);
+  }, [canSetAnInitialSourceToken, initialSource, swapsTokens]);
+
+  const canSetAnInitialTokenDestination =
+    !isDestinationSet &&
+    initialDestination &&
+    swapsControllerTokens &&
+    swapsTokens?.length > 0 &&
+    !destinationToken;
+
+  useEffect(() => {
+    if (canSetAnInitialTokenDestination) {
+      setIsDestinationSet(true);
+      setDestinationToken(
+        swapsTokens.find((token) =>
+          toLowerCaseEquals(token.address, initialDestination),
+        ),
+      );
+    }
+  }, [canSetAnInitialTokenDestination, initialDestination, swapsTokens]);
 
   useEffect(() => {
     setHasDismissedTokenAlert(false);
@@ -376,6 +421,23 @@ function SwapsAmountView({
       }
     })();
   }, [isTokenInBalances, selectedAddress, sourceToken]);
+
+  /**
+   * Reset the state when account changes
+   */
+  useEffect(() => {
+    if (selectedAddress !== previousSelectedAddress.current) {
+      setAmount('0');
+      setSourceToken(
+        swapsTokens?.find((token) =>
+          toLowerCaseEquals(token.address, initialSource),
+        ),
+      );
+      setDestinationToken(null);
+      setSlippage(AppConstants.SWAPS.DEFAULT_SLIPPAGE);
+      previousSelectedAddress.current = selectedAddress;
+    }
+  }, [selectedAddress, swapsTokens, initialSource]);
 
   const hasInvalidDecimals = useMemo(() => {
     if (sourceToken) {
@@ -487,8 +549,8 @@ function SwapsAmountView({
       !isBalanceZero
     ) {
       const { TokensController } = Engine.context;
-      const { address, symbol, decimals } = sourceToken;
-      await TokensController.addToken(address, symbol, decimals);
+      const { address, symbol, decimals, name } = sourceToken;
+      await TokensController.addToken(address, symbol, decimals, { name });
     }
     return navigation.navigate(
       'SwapsQuotesView',
@@ -606,17 +668,6 @@ function SwapsAmountView({
   const disabledView =
     !destinationTokenHasEnoughOcurrances && !hasDismissedTokenAlert;
 
-  if (!userHasOnboarded) {
-    return (
-      <ScreenView
-        style={styles.container}
-        contentContainerStyle={styles.screen}
-      >
-        <Onboarding setHasOnboarded={setHasOnboarded} />
-      </ScreenView>
-    );
-  }
-
   return (
     <ScreenView
       style={styles.container}
@@ -624,9 +675,13 @@ function SwapsAmountView({
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.content}>
+        <View style={styles.accountSelector}>
+          <AccountSelector />
+        </View>
         <View
           style={[styles.tokenButtonContainer, disabledView && styles.disabled]}
           pointerEvents={disabledView ? 'none' : 'auto'}
+          testID={SWAP_SOURCE_TOKEN}
         >
           {isInitialLoadingTokens ? (
             <ActivityIndicator size="small" />
@@ -707,7 +762,7 @@ function SwapsAmountView({
           </TouchableOpacity>
           <View style={styles.horizontalRule} />
         </View>
-        <View style={styles.tokenButtonContainer}>
+        <View style={styles.tokenButtonContainer} testID={SWAP_DEST_TOKEN}>
           {isInitialLoadingTokens ? (
             <ActivityIndicator size="small" />
           ) : (
@@ -847,7 +902,7 @@ function SwapsAmountView({
               hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
               disabled={isDirectWrapping}
             >
-              <Text bold link={!isDirectWrapping}>
+              <Text bold link={!isDirectWrapping} testID={SWAP_MAX_SLIPPAGE}>
                 {strings('swaps.max_slippage_amount', {
                   slippage: `${slippage}%`,
                 })}
@@ -941,17 +996,17 @@ SwapsAmountView.propTypes = {
    */
   setHasOnboarded: PropTypes.func,
   /**
-   * Current Network provider
+   * Current network provider configuration
    */
-  provider: PropTypes.object,
+  providerConfig: PropTypes.object,
   /**
    * Chain Id
    */
   chainId: PropTypes.string,
   /**
-   * Frequent RPC list from PreferencesController
+   * Network configurations
    */
-  frequentRpcList: PropTypes.array,
+  networkConfigurations: PropTypes.object,
   /**
    * Function to set liveness
    */
@@ -961,21 +1016,15 @@ SwapsAmountView.propTypes = {
 const mapStateToProps = (state) => ({
   swapsTokens: swapsTokensSelector(state),
   swapsControllerTokens: swapsControllerTokens(state),
-  accounts: state.engine.backgroundState.AccountTrackerController.accounts,
-  selectedAddress:
-    state.engine.backgroundState.PreferencesController.selectedAddress,
-  balances:
-    state.engine.backgroundState.TokenBalancesController.contractBalances,
-  conversionRate:
-    state.engine.backgroundState.CurrencyRateController.conversionRate,
-  tokenExchangeRates:
-    state.engine.backgroundState.TokenRatesController.contractExchangeRates,
-  currentCurrency:
-    state.engine.backgroundState.CurrencyRateController.currentCurrency,
-  provider: state.engine.backgroundState.NetworkController.provider,
-  frequentRpcList:
-    state.engine.backgroundState.PreferencesController.frequentRpcList,
-  chainId: state.engine.backgroundState.NetworkController.provider.chainId,
+  accounts: selectAccounts(state),
+  balances: selectContractBalances(state),
+  selectedAddress: selectSelectedAddress(state),
+  conversionRate: selectConversionRate(state),
+  currentCurrency: selectCurrentCurrency(state),
+  tokenExchangeRates: selectContractExchangeRates(state),
+  providerConfig: selectProviderConfig(state),
+  networkConfigurations: selectNetworkConfigurations(state),
+  chainId: selectChainId(state),
   tokensWithBalance: swapsTokensWithBalanceSelector(state),
   tokensTopAssets: swapsTopAssetsSelector(state),
   userHasOnboarded: swapsHasOnboardedSelector(state),

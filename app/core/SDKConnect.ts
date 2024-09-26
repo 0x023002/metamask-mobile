@@ -1,7 +1,7 @@
 import BackgroundBridge from './BackgroundBridge/BackgroundBridge';
 import RemoteCommunication, {
   CommunicationLayerPreference,
-} from './RemoteConnection';
+} from '@metamask/sdk-communication-layer';
 import getRpcMethodMiddleware from './RPCMethods/RPCMethodMiddleware';
 import AppConstants from './AppConstants';
 import Minimizer from 'react-native-minimizer';
@@ -146,6 +146,7 @@ class Connection {
     }
 
     this.RemoteConn.on('clients_ready', ({ originatorInfo }) => {
+      const isMMSDK = true;
       if (this.isReady) return;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -156,6 +157,7 @@ class Connection {
         sendMessage: this.sendMessage,
         getApprovedHosts: () => approvedHosts,
         remoteConnHost: this.host,
+        isMMSDK,
         getRpcMethodMiddleware: ({
           getProviderState,
         }: {
@@ -181,6 +183,7 @@ class Connection {
             wizardScrollAdjusted: { current: false },
             tabId: '',
             isWalletConnect: false,
+            isMMSDK,
             analytics: {
               isRemoteConn: true,
               platform: parseSource(originatorInfo?.platform),

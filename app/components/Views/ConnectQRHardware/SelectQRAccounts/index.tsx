@@ -20,6 +20,10 @@ import Device from '../../../../util/device';
 import { useTheme } from '../../../../util/theme';
 import AccountDetails from '../AccountDetails';
 import StyledButton from '../../../UI/StyledButton';
+import {
+  selectNetworkConfigurations,
+  selectProviderConfig,
+} from '../../../../selectors/networkController';
 
 interface ISelectQRAccountsProps {
   canUnlock: boolean;
@@ -99,21 +103,16 @@ const SelectQRAccounts = (props: ISelectQRAccountsProps) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigation = useNavigation();
-  const provider = useSelector(
-    (state: any) => state.engine.backgroundState.NetworkController.provider,
-  );
-  const frequentRpcList = useSelector(
-    (state: any) =>
-      state.engine.backgroundState.PreferencesController.frequentRpcList,
-  );
+  const providerConfig = useSelector(selectProviderConfig);
+  const networkConfigurations = useSelector(selectNetworkConfigurations);
 
   const toBlockExplorer = useCallback(
     (address: string) => {
-      const { type, rpcTarget } = provider;
+      const { type, rpcTarget } = providerConfig;
       let accountLink: string;
       if (type === RPC) {
         const blockExplorer =
-          findBlockExplorerForRpc(rpcTarget, frequentRpcList) ||
+          findBlockExplorerForRpc(rpcTarget, networkConfigurations) ||
           NO_RPC_BLOCK_EXPLORER;
         accountLink = `${blockExplorer}/address/${address}`;
       } else {
@@ -126,7 +125,7 @@ const SelectQRAccounts = (props: ISelectQRAccountsProps) => {
         },
       });
     },
-    [frequentRpcList, navigation, provider],
+    [networkConfigurations, navigation, providerConfig],
   );
 
   return (
@@ -152,13 +151,12 @@ const SelectQRAccounts = (props: ISelectQRAccountsProps) => {
               onCheckColor={colors.background.default}
               onFillColor={colors.primary.default}
               onTintColor={colors.primary.default}
-              testID={'skip-backup-check'}
             />
             <AccountDetails
               index={item.index}
               address={item.address}
               balance={item.balance}
-              ticker={provider.ticker}
+              ticker={providerConfig.ticker}
               toBlockExplorer={toBlockExplorer}
             />
           </View>

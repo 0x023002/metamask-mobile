@@ -1,43 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Alert, Linking, Platform, StyleSheet, Text } from 'react-native';
+import { Alert, Linking, Platform } from 'react-native';
 import Analytics from '../../../../../core/Analytics/Analytics';
+import { MetaMetricsEvents } from '../../../../../core/Analytics';
 import {
   DataDeleteStatus,
   DataDeleteResponseStatus,
 } from '../../../../../core/Analytics/MetaMetrics.types';
-import { useTheme } from '../../../../../util/theme';
 import SettingsButtonSection from '../../../../UI/SettingsButtonSection';
 import { strings } from '../../../../../../locales/i18n';
-import { fontStyles } from '../../../../../styles/common';
 import { CONSENSYS_PRIVACY_POLICY } from '../../../../../constants/urls';
 import Logger from '../../../../../util/Logger';
-import AnalyticsV2, {
-  ANALYTICS_EVENTS_V2,
-} from '../../../../../util/analyticsV2';
+import AnalyticsV2 from '../../../../../util/analyticsV2';
 import { getBrand, getDeviceId } from 'react-native-device-info';
-
-const createStyles = (colors: any) =>
-  StyleSheet.create({
-    container: {
-      ...fontStyles.normal,
-      color: colors.text.alternative,
-      fontSize: 15,
-      lineHeight: 20,
-      marginTop: 12,
-    },
-    boldText: {
-      color: colors.text.default,
-      ...fontStyles.bold,
-    },
-    blueText: {
-      color: colors.primary.default,
-    },
-  });
+import Text, {
+  TextVariant,
+  TextColor,
+} from '../../../../../component-library/components/Texts/Text';
+import Button, {
+  ButtonVariants,
+  ButtonSize,
+} from '../../../../../component-library/components/Buttons/Button';
 
 const DeleteMetaMetricsData = () => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
-
   const [hasCollectedData, setHasCollectedData] = useState<boolean>(
     Analytics.checkEnabled() || Analytics.getIsDataRecorded(),
   );
@@ -75,14 +59,11 @@ const DeleteMetaMetricsData = () => {
     const deviceOSVersion = Platform.Version;
     const deviceBrand = await getBrand();
     const deviceId = await getDeviceId();
-    AnalyticsV2.trackEvent(
-      ANALYTICS_EVENTS_V2.ANALYTICS_REQUEST_DATA_DELETION,
-      {
-        os: deviceOS,
-        os_version: deviceOSVersion,
-        device_model: `${deviceBrand} ${deviceId}`,
-      },
-    );
+    AnalyticsV2.trackEvent(MetaMetricsEvents.ANALYTICS_REQUEST_DATA_DELETION, {
+      os: deviceOS,
+      os_version: deviceOSVersion,
+      device_model: `${deviceBrand} ${deviceId}`,
+    });
   };
 
   const deleteMetaMetrics = async () => {
@@ -129,37 +110,49 @@ const DeleteMetaMetricsData = () => {
 
   return (
     <SettingsButtonSection
+      testID="delete-metrics-button"
       needsModal
       sectionTitle={strings('app_settings.delete_metrics_title')}
       sectionButtonText={strings('app_settings.delete_metrics_button')}
       descriptionText={
         hasCollectedData ? (
           <>
-            <Text>
+            <Text variant={TextVariant.BodyMD} color={TextColor.Alternative}>
               {strings('app_settings.delete_metrics_description_part_one')}
             </Text>{' '}
-            <Text style={[styles.boldText]}>
+            <Text
+              variant={TextVariant.BodyMDBold}
+              color={TextColor.Alternative}
+            >
               {strings('app_settings.delete_metrics_description_part_two')}
             </Text>{' '}
-            <Text>
+            <Text variant={TextVariant.BodyMD} color={TextColor.Alternative}>
               {strings('app_settings.delete_metrics_description_part_three')}
             </Text>{' '}
-            <Text style={[styles.blueText]} onPress={openPrivacyPolicy}>
-              {strings('app_settings.consensys_privacy_policy')}
-            </Text>
+            <Button
+              variant={ButtonVariants.Link}
+              size={ButtonSize.Auto}
+              onPress={openPrivacyPolicy}
+              label={strings('app_settings.consensys_privacy_policy')}
+            />
           </>
         ) : (
           <>
-            <Text>
+            <Text variant={TextVariant.BodyMD} color={TextColor.Alternative}>
               {strings('app_settings.delete_metrics_description_part_four')}
             </Text>{' '}
-            <Text>{deletionTaskDate}</Text>
-            <Text>
+            <Text variant={TextVariant.BodyMD} color={TextColor.Alternative}>
+              {deletionTaskDate}
+            </Text>
+            <Text variant={TextVariant.BodyMD} color={TextColor.Alternative}>
               {strings('app_settings.delete_metrics_description_part_five')}
             </Text>{' '}
-            <Text style={[styles.blueText]} onPress={openPrivacyPolicy}>
-              {strings('app_settings.consensys_privacy_policy')}
-            </Text>
+            <Button
+              variant={ButtonVariants.Link}
+              size={ButtonSize.Auto}
+              onPress={openPrivacyPolicy}
+              label={strings('app_settings.consensys_privacy_policy')}
+            />
           </>
         )
       }

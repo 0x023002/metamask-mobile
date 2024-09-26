@@ -28,20 +28,43 @@ import {
   calculateEthEIP1559,
   calculateERC20EIP1559,
 } from '../../../../util/transactions';
+import { sumHexWEIs } from '../../../../util/conversions';
 import Analytics from '../../../../core/Analytics/Analytics';
-import { ANALYTICS_EVENT_OPTS } from '../../../../util/analytics';
-import { getNetworkNonce, isTestNet } from '../../../../util/networks';
+import { MetaMetricsEvents } from '../../../../core/Analytics';
+import {
+  TESTNET_FAUCETS,
+  getNetworkNonce,
+  isTestNet,
+  isTestNetworkWithFaucet,
+} from '../../../../util/networks';
 import CustomNonceModal from '../../../UI/CustomNonceModal';
 import { setNonce, setProposedNonce } from '../../../../actions/transaction';
 import TransactionReviewEIP1559 from '../TransactionReviewEIP1559';
-import { GAS_ESTIMATE_TYPES } from '@metamask/controllers';
+import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import CustomNonce from '../../../UI/CustomNonce';
 import Logger from '../../../../util/Logger';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
-import Routes from '../../../../constants/navigation/Routes';
 import AppConstants from '../../../../core/AppConstants';
 import WarningMessage from '../../../Views/SendFlow/WarningMessage';
-import { allowedToBuy } from '../../FiatOrders';
+<<<<<<< HEAD
+import {
+  selectChainId,
+  selectTicker,
+} from '../../../../selectors/networkController';
+import {
+  selectConversionRate,
+  selectCurrentCurrency,
+  selectNativeCurrency,
+} from '../../../../selectors/currencyRateController';
+import { selectContractExchangeRates } from '../../../../selectors/tokenRatesController';
+import { createBrowserNavDetails } from '../../../Views/Browser';
+import { isNetworkRampNativeTokenSupported } from '../../Ramp/common/utils';
+import { getRampNetworks } from '../../../../reducers/fiatOrders';
+import Routes from '../../../../constants/navigation/Routes';
+=======
+import { allowedToBuy } from '../../FiatOnRampAggregator';
+import { createBrowserNavDetails } from '../../../Views/Browser';
+>>>>>>> upstream/testflight/4754-permission-system
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -168,9 +191,9 @@ class TransactionReviewInformation extends PureComponent {
      */
     onCancelPress: PropTypes.func,
     /**
-     * Network id
+     * The chain ID for the current selected network
      */
-    network: PropTypes.string,
+    chainId: PropTypes.string,
     /**
      * Indicates whether custom nonce should be shown in transaction editor
      */
@@ -208,6 +231,11 @@ class TransactionReviewInformation extends PureComponent {
      */
     originWarning: PropTypes.bool,
     gasSelected: PropTypes.string,
+    multiLayerL1FeeTotal: PropTypes.string,
+    /**
+     * Boolean that indicates if the network supports buy
+     */
+    isNativeTokenBuySupported: PropTypes.bool,
   };
 
   state = {
@@ -270,14 +298,12 @@ class TransactionReviewInformation extends PureComponent {
     /* this is kinda weird, we have to reject the transaction to collapse the modal */
     this.onCancelPress();
     try {
-      navigation.navigate('FiatOnRampAggregator');
+      navigation.navigate(Routes.RAMP.BUY);
     } catch (error) {
       Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
     }
     InteractionManager.runAfterInteractions(() => {
-      Analytics.trackEvent(
-        ANALYTICS_EVENT_OPTS.RECEIVE_OPTIONS_PAYMENT_REQUEST,
-      );
+      Analytics.trackEvent(MetaMetricsEvents.RECEIVE_OPTIONS_PAYMENT_REQUEST);
     });
   };
 
@@ -341,8 +367,8 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   isTestNetwork = () => {
-    const { network } = this.props;
-    return isTestNet(network);
+    const { chainId } = this.props;
+    return isTestNet(chainId);
   };
 
   getRenderTotalsEIP1559 = ({
@@ -509,12 +535,19 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   goToFaucet = () => {
+    const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
       this.onCancelPress();
-      this.props.navigation.navigate(Routes.BROWSER_VIEW, {
-        newTabUrl: AppConstants.URLS.MM_FAUCET,
-        timestamp: Date.now(),
-      });
+      this.props.navigation.navigate(
+        ...createBrowserNavDetails({
+<<<<<<< HEAD
+          newTabUrl: TESTNET_FAUCETS[chainId],
+=======
+          newTabUrl: AppConstants.URLS.MM_FAUCET,
+>>>>>>> upstream/testflight/4754-permission-system
+          timestamp: Date.now(),
+        }),
+      );
     });
   };
 
@@ -564,7 +597,7 @@ class TransactionReviewInformation extends PureComponent {
     );
   };
 
-  renderTransactionReviewFeeCard = () => {
+  renderTransactionReviewLegacy = () => {
     const {
       primaryCurrency,
       ready,
@@ -577,10 +610,15 @@ class TransactionReviewInformation extends PureComponent {
       onUpdatingValuesEnd,
       animateOnChange,
       isAnimating,
+      multiLayerL1FeeTotal,
     } = this.props;
 
-    const totalGas =
+    let totalGas =
       isBN(gas) && isBN(gasPrice) ? gas.mul(gasPrice) : hexToBN('0x0');
+    if (multiLayerL1FeeTotal) {
+      totalGas = hexToBN(sumHexWEIs([BNToHex(totalGas), multiLayerL1FeeTotal]));
+    }
+
     const totalGasFiat = weiToFiat(totalGas, conversionRate, currentCurrency);
     const totalGasEth = `${renderFromWei(totalGas)} ${getTicker(ticker)}`;
     const [totalFiat, totalValue] = this.getRenderTotals(
@@ -609,14 +647,15 @@ class TransactionReviewInformation extends PureComponent {
   render() {
     const { amountError, nonceModalVisible } = this.state;
     const {
+      chainId,
       toggleDataView,
-      transaction: { warningGasPriceHigh },
+      transaction: { warningGasPriceHigh, type },
       error,
       over,
       showCustomNonce,
       gasEstimateType,
       gasSelected,
-      network,
+      isNativeTokenBuySupported,
     } = this.props;
     const { nonce } = this.props.transaction;
     const colors = this.context.colors || mockTheme.colors;
@@ -628,16 +667,17 @@ class TransactionReviewInformation extends PureComponent {
       : strings('transaction.buy_more');
 
     const showFeeMarket =
-      !gasEstimateType ||
-      gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET ||
-      gasEstimateType === GAS_ESTIMATE_TYPES.NONE;
+      (!gasEstimateType ||
+        gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET ||
+        gasEstimateType === GAS_ESTIMATE_TYPES.NONE) &&
+      type !== '0x0';
 
     return (
       <React.Fragment>
         {nonceModalVisible && this.renderCustomNonceModal()}
         {showFeeMarket
           ? this.renderTransactionReviewEIP1559()
-          : this.renderTransactionReviewFeeCard()}
+          : this.renderTransactionReviewLegacy()}
         {gasSelected === AppConstants.GAS_OPTIONS.LOW && (
           <WarningMessage
             style={styles.actionsWrapper}
@@ -661,7 +701,7 @@ class TransactionReviewInformation extends PureComponent {
         )}
         {!!error && (
           <View style={styles.errorWrapper}>
-            {this.isTestNetwork() || allowedToBuy(network) ? (
+            {isTestNetworkWithFaucet(chainId) || isNativeTokenBuySupported ? (
               <TouchableOpacity onPress={errorPress}>
                 <Text style={styles.error}>{error}</Text>
                 {over && (
@@ -698,19 +738,19 @@ class TransactionReviewInformation extends PureComponent {
 }
 
 const mapStateToProps = (state) => ({
-  network: state.engine.backgroundState.NetworkController.network,
-  conversionRate:
-    state.engine.backgroundState.CurrencyRateController.conversionRate,
-  currentCurrency:
-    state.engine.backgroundState.CurrencyRateController.currentCurrency,
-  contractExchangeRates:
-    state.engine.backgroundState.TokenRatesController.contractExchangeRates,
+  chainId: selectChainId(state),
+  conversionRate: selectConversionRate(state),
+  currentCurrency: selectCurrentCurrency(state),
+  nativeCurrency: selectNativeCurrency(state),
+  contractExchangeRates: selectContractExchangeRates(state),
   transaction: getNormalizedTxState(state),
-  ticker: state.engine.backgroundState.NetworkController.provider.ticker,
+  ticker: selectTicker(state),
   primaryCurrency: state.settings.primaryCurrency,
   showCustomNonce: state.settings.showCustomNonce,
-  nativeCurrency:
-    state.engine.backgroundState.CurrencyRateController.nativeCurrency,
+  isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
+    selectChainId(state),
+    getRampNetworks(state),
+  ),
 });
 
 const mapDispatchToProps = (dispatch) => ({

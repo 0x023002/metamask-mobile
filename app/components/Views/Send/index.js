@@ -29,7 +29,7 @@ import { toggleDappTransactionModal } from '../../../actions/modals';
 import NotificationManager from '../../../core/NotificationManager';
 import { showAlert } from '../../../actions/alert';
 import Analytics from '../../../core/Analytics/Analytics';
-import { ANALYTICS_EVENT_OPTS } from '../../../util/analytics';
+import { MetaMetricsEvents } from '../../../core/Analytics';
 import {
   getTransactionReviewActionKey,
   decodeTransferData,
@@ -37,15 +37,28 @@ import {
   generateTransferData,
 } from '../../../util/transactions';
 import Logger from '../../../util/Logger';
-import { isENS } from '../../../util/address';
+import { getAddress } from '../../../util/address';
 import TransactionTypes from '../../../core/TransactionTypes';
 import { MAINNET } from '../../../constants/network';
 import BigNumber from 'bignumber.js';
-import { WalletDevice } from '@metamask/controllers/';
-import { getTokenList } from '../../../reducers/tokens';
+import { WalletDevice } from '@metamask/transaction-controller';
 import AnalyticsV2 from '../../../util/analyticsV2';
+
 import { KEYSTONE_TX_CANCELED } from '../../../constants/error';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import {
+  selectChainId,
+  selectProviderType,
+} from '../../../selectors/networkController';
+import { selectTokenList } from '../../../selectors/tokenListController';
+import { selectTokens } from '../../../selectors/tokensController';
+import { selectAccounts } from '../../../selectors/accountTrackerController';
+import { selectContractBalances } from '../../../selectors/tokenBalancesController';
+import {
+  selectIdentities,
+  selectSelectedAddress,
+} from '../../../selectors/preferencesController';
+import { ethErrors } from 'eth-rpc-errors';
 
 const REVIEW = 'review';
 const EDIT = 'edit';
@@ -95,17 +108,17 @@ class Send extends PureComponent {
      */
     transaction: PropTypes.object.isRequired,
     /**
-		/* Triggers global alert
-		*/
+     * Triggers global alert
+     */
     showAlert: PropTypes.func,
     /**
      * Map representing the address book
      */
     addressBook: PropTypes.object,
     /**
-     * Network id
+     * The chain ID of the current selected network
      */
-    network: PropTypes.string,
+    chainId: PropTypes.string,
     /**
      * List of accounts from the PreferencesController
      */
@@ -119,12 +132,12 @@ class Send extends PureComponent {
      */
     contractBalances: PropTypes.object,
     /**
-		/* Hides or shows dApp transaction modal
-		*/
+     * Hides or shows dApp transaction modal
+     */
     toggleDappTransactionModal: PropTypes.func,
     /**
-		/* dApp transaction modal visible or not
-		*/
+     * dApp transaction modal visible or not
+     */
     dappTransactionModalVisible: PropTypes.bool,
     /**
      * List of tokens from TokenListController
@@ -171,11 +184,11 @@ class Send extends PureComponent {
   /**
    * Check if view is called with txMeta object for a deeplink
    */
-  checkForDeeplinks() {
+  async checkForDeeplinks() {
     const { route } = this.props;
     const txMeta = route.params?.txMeta;
     if (txMeta) {
-      this.handleNewTxMeta(txMeta);
+      await this.handleNewTxMeta(txMeta);
     } else {
       this.mounted && this.setState({ ready: true });
     }
@@ -212,7 +225,7 @@ class Send extends PureComponent {
     dappTransactionModalVisible && toggleDappTransactionModal();
     this.mounted = true;
     await this.reset();
-    this.checkForDeeplinks();
+    await this.checkForDeeplinks();
   }
 
   /**
@@ -266,14 +279,19 @@ class Send extends PureComponent {
   /**
    * Handle deeplink txMeta recipient
    */
-  handleNewTxMetaRecipient = (recipient) => {
-    let ensRecipient, to;
-    if (isENS(recipient)) {
-      ensRecipient = recipient;
-    } else if (recipient && recipient.toLowerCase().substr(0, 2) === '0x') {
-      to = toChecksumAddress(recipient);
+  handleNewTxMetaRecipient = async (recipient) => {
+    const to = await getAddress(recipient, this.props.chainId);
+
+    if (!to) {
+      NotificationManager.showSimpleNotification({
+        status: 'simple_notification_rejected',
+        duration: 5000,
+        title: strings('transaction.invalid_recipient'),
+        description: strings('transaction.invalid_recipient_description'),
+      });
+      this.props.navigation.navigate('WalletView');
     }
-    return { ensRecipient, to };
+    return { to };
   };
 
   /**
@@ -286,38 +304,46 @@ class Send extends PureComponent {
     function_name = null, // eslint-disable-line no-unused-vars
     parameters = null,
   }) => {
-    const { addressBook, network, identities, selectedAddress } = this.props;
+    const { addressBook, chainId, identities, selectedAddress } = this.props;
 
     let newTxMeta = {};
+    let txRecipient;
     switch (action) {
       case 'send-eth':
+        txRecipient = await this.handleNewTxMetaRecipient(target_address);
+        if (!txRecipient.to) return;
         newTxMeta = {
           symbol: 'ETH',
           assetType: 'ETH',
           type: 'ETHER_TRANSACTION',
           paymentRequest: true,
           selectedAsset: { symbol: 'ETH', isETH: true },
-          ...this.handleNewTxMetaRecipient(target_address),
+          ...txRecipient,
         };
+
         if (parameters && parameters.value) {
           newTxMeta.value = BNToHex(toBN(parameters.value));
           newTxMeta.transactionValue = newTxMeta.value;
           newTxMeta.readableValue = fromWei(newTxMeta.value);
         }
+
         newTxMeta.transactionToName = getTransactionToName({
           addressBook,
-          network,
+          chainId,
           toAddress: newTxMeta.to,
           identities,
           ensRecipient: newTxMeta.ensRecipient,
         });
+
         newTxMeta.transactionTo = newTxMeta.to;
         break;
       case 'send-token': {
         const selectedAsset = await this.handleTokenDeeplink(target_address);
-        const { ensRecipient, to } = this.handleNewTxMetaRecipient(
+
+        const { ensRecipient, to } = await this.handleNewTxMetaRecipient(
           parameters.address,
         );
+        if (!to) return;
         const tokenAmount =
           (parameters.uint256 &&
             new BigNumber(parameters.uint256).toString(16)) ||
@@ -331,7 +357,7 @@ class Send extends PureComponent {
           to: selectedAsset.address,
           transactionTo: to,
           data: generateTransferData('transfer', {
-            toAddress: parameters.address,
+            toAddress: to,
             amount: tokenAmount,
           }),
           value: '0x0',
@@ -343,7 +369,7 @@ class Send extends PureComponent {
         };
         newTxMeta.transactionToName = getTransactionToName({
           addressBook,
-          network,
+          chainId,
           toAddress: to,
           identities,
           ensRecipient,
@@ -359,6 +385,19 @@ class Send extends PureComponent {
       }
       if (gasPrice) {
         newTxMeta.gasPrice = toBN(gas);
+      }
+
+      // if gas and gasPrice is not defined in the deeplink, we should define them
+      if (!gas && !gasPrice) {
+        const { gas, gasPrice } =
+          await Engine.context.TransactionController.estimateGas(
+            this.props.transaction,
+          );
+        newTxMeta = {
+          ...newTxMeta,
+          gas,
+          gasPrice,
+        };
       }
       // TODO: We should add here support for sending tokens
       // or calling smart contract functions
@@ -462,14 +501,11 @@ class Send extends PureComponent {
   /**
    * Removes collectible in case an ERC721 asset is being sent, when not in mainnet
    */
-  removeCollectible = () => {
+  removeNft = () => {
     const { selectedAsset, assetType, providerType } = this.props.transaction;
     if (assetType === 'ERC721' && providerType !== MAINNET) {
-      const { CollectiblesController } = Engine.context;
-      CollectiblesController.removeCollectible(
-        selectedAsset.address,
-        selectedAsset.tokenId,
-      );
+      const { NftController } = Engine.context;
+      NftController.removeNft(selectedAsset.address, selectedAsset.tokenId);
     }
   };
 
@@ -479,7 +515,10 @@ class Send extends PureComponent {
    * @param if - Transaction id
    */
   onCancel = (id) => {
-    Engine.context.TransactionController.cancelTransaction(id);
+    Engine.context.ApprovalController.reject(
+      id,
+      ethErrors.provider.userRejectedRequest(),
+    );
     this.props.navigation.pop();
     this.unmountHandled = true;
     this.state.mode === REVIEW && this.trackOnCancel();
@@ -492,12 +531,16 @@ class Send extends PureComponent {
    * and returns to edit transaction
    */
   onConfirm = async () => {
-    const { TransactionController, AddressBookController, KeyringController } =
-      Engine.context;
+    const {
+      TransactionController,
+      AddressBookController,
+      KeyringController,
+      ApprovalController,
+    } = Engine.context;
     this.setState({ transactionConfirmed: true });
     const {
       transaction: { selectedAsset, assetType },
-      network,
+      chainId,
       addressBook,
     } = this.props;
     let { transaction } = this.props;
@@ -508,13 +551,14 @@ class Send extends PureComponent {
         transaction = this.prepareAssetTransaction(transaction, selectedAsset);
       }
       const { result, transactionMeta } =
-        await TransactionController.addTransaction(
-          transaction,
-          TransactionTypes.MMM,
-          WalletDevice.MM_MOBILE,
-        );
+        await TransactionController.addTransaction(transaction, {
+          deviceConfirmedOn: WalletDevice.MM_MOBILE,
+          origin: TransactionTypes.MMM,
+        });
       await KeyringController.resetQRKeyringState();
-      await TransactionController.approveTransaction(transactionMeta.id);
+      await ApprovalController.accept(transactionMeta.id, undefined, {
+        waitForResult: true,
+      });
 
       // Add to the AddressBook if it's an unkonwn address
       let checksummedAddress = null;
@@ -548,9 +592,9 @@ class Send extends PureComponent {
         }
       }
       const existingContact =
-        addressBook[network] && addressBook[network][checksummedAddress];
+        addressBook[chainId] && addressBook[chainId][checksummedAddress];
       if (!existingContact) {
-        AddressBookController.set(checksummedAddress, '', network);
+        AddressBookController.set(checksummedAddress, '', chainId);
       }
       await new Promise((resolve) => {
         resolve(result);
@@ -568,7 +612,7 @@ class Send extends PureComponent {
           ...transactionMeta,
           assetType: transaction.assetType,
         });
-        this.removeCollectible();
+        this.removeNft();
       });
     } catch (error) {
       if (!error?.message.startsWith(KEYSTONE_TX_CANCELED)) {
@@ -580,7 +624,7 @@ class Send extends PureComponent {
         Logger.error(error, 'error while trying to send transaction (Send)');
       } else {
         AnalyticsV2.trackEvent(
-          AnalyticsV2.ANALYTICS_EVENTS.QR_HARDWARE_TRANSACTION_CANCELED,
+          MetaMetricsEvents.QR_HARDWARE_TRANSACTION_CANCELED,
         );
       }
       this.setState({ transactionConfirmed: false });
@@ -596,7 +640,7 @@ class Send extends PureComponent {
    */
   trackConfirmScreen = () => {
     Analytics.trackEventWithParameters(
-      ANALYTICS_EVENT_OPTS.TRANSACTIONS_CONFIRM_STARTED,
+      MetaMetricsEvents.TRANSACTIONS_CONFIRM_STARTED,
       this.getTrackingParams(),
     );
   };
@@ -608,7 +652,7 @@ class Send extends PureComponent {
     const { transaction } = this.props;
     const actionKey = await getTransactionReviewActionKey(transaction);
     Analytics.trackEventWithParameters(
-      ANALYTICS_EVENT_OPTS.TRANSACTIONS_EDIT_TRANSACTION,
+      MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION,
       {
         ...this.getTrackingParams(),
         actionKey,
@@ -621,7 +665,7 @@ class Send extends PureComponent {
    */
   trackOnCancel = () => {
     Analytics.trackEventWithParameters(
-      ANALYTICS_EVENT_OPTS.TRANSACTIONS_CANCEL_TRANSACTION,
+      MetaMetricsEvents.TRANSACTIONS_CANCEL_TRANSACTION,
       this.getTrackingParams(),
     );
   };
@@ -631,7 +675,7 @@ class Send extends PureComponent {
    */
   trackOnConfirm = () => {
     Analytics.trackEventWithParameters(
-      ANALYTICS_EVENT_OPTS.TRANSACTIONS_COMPLETED_TRANSACTION,
+      MetaMetricsEvents.TRANSACTIONS_COMPLETED_TRANSACTION,
       this.getTrackingParams(),
     );
   };
@@ -639,13 +683,14 @@ class Send extends PureComponent {
   /**
    * Returns corresponding tracking params to send
    *
-   * @return {object} - Object containing view, network, activeCurrency and assetType
+   * @return {object} - Object containing view, network type, activeCurrency and assetType
    */
   getTrackingParams = () => {
     const {
       networkType,
       transaction: { selectedAsset, assetType },
     } = this.props;
+
     return {
       view: SEND,
       network: networkType,
@@ -720,20 +765,16 @@ class Send extends PureComponent {
 
 const mapStateToProps = (state) => ({
   addressBook: state.engine.backgroundState.AddressBookController.addressBook,
-  accounts: state.engine.backgroundState.AccountTrackerController.accounts,
-  frequentRpcList:
-    state.engine.backgroundState.PreferencesController.frequentRpcList,
-  contractBalances:
-    state.engine.backgroundState.TokenBalancesController.contractBalances,
+  accounts: selectAccounts(state),
+  contractBalances: selectContractBalances(state),
   transaction: state.transaction,
-  networkType: state.engine.backgroundState.NetworkController.provider.type,
-  tokens: state.engine.backgroundState.TokensController.tokens,
-  network: state.engine.backgroundState.NetworkController.network,
-  identities: state.engine.backgroundState.PreferencesController.identities,
-  selectedAddress:
-    state.engine.backgroundState.PreferencesController.selectedAddress,
+  networkType: selectProviderType(state),
+  tokens: selectTokens(state),
+  chainId: selectChainId(state),
+  identities: selectIdentities(state),
+  selectedAddress: selectSelectedAddress(state),
   dappTransactionModalVisible: state.modals.dappTransactionModalVisible,
-  tokenList: getTokenList(state),
+  tokenList: selectTokenList(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

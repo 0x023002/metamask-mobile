@@ -1,18 +1,31 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+import { ActivityIndicator, Text, View, ScrollView, StyleSheet, Alert, Image, InteractionManager } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+=======
+>>>>>>> Stashed changes
 import {
   ActivityIndicator,
   BackHandler,
-  Text,
   View,
   ScrollView,
   StyleSheet,
-  Alert,
   Image,
   InteractionManager,
-  Platform,
+  Animated,
+  Easing,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import Text, {
+  TextVariant,
+} from '../../../component-library/components/Texts/Text';
+import AsyncStorage from '../../../store/async-storage-wrapper';
+<<<<<<< Updated upstream
+=======
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
 import StyledButton from '../../UI/StyledButton';
 import {
   fontStyles,
@@ -23,29 +36,174 @@ import OnboardingScreenWithBg from '../../UI/OnboardingScreenWithBg';
 import { strings } from '../../../../locales/i18n';
 import Button from 'react-native-button';
 import { connect } from 'react-redux';
-import SecureKeychain from '../../../core/SecureKeychain';
-import Engine from '../../../core/Engine';
 import FadeOutOverlay from '../../UI/FadeOutOverlay';
-import TermsAndConditions from '../TermsAndConditions';
 import Analytics from '../../../core/Analytics/Analytics';
 import { saveOnboardingEvent } from '../../../actions/onboarding';
+<<<<<<< Updated upstream
 import {
   getTransparentBackOnboardingNavbarOptions,
   getTransparentOnboardingNavbarOptions,
 } from '../../UI/Navbar';
 import Device from '../../../util/device';
 import BaseNotification from '../../UI/Notification/BaseNotification';
-import Animated, { EasingNode } from 'react-native-reanimated';
+import ElevatedView from 'react-native-elevated-view';
+import { loadingSet, loadingUnset } from '../../../actions/user';
+=======
+<<<<<<< HEAD
+import { getTransparentBackOnboardingNavbarOptions } from '../../UI/Navbar';
+import PubNubWrapper from '../../../util/syncWithExtension';
+import ActionModal from '../../UI/ActionModal';
+import Logger from '../../../util/Logger';
+import Device from '../../../util/Device';
+import { passwordSet, seedphraseBackedUp } from '../../../actions/user';
+import { setLockTime } from '../../../actions/settings';
+import AppConstants from '../../../core/AppConstants';
+import AnimatedFox from 'react-native-animated-fox';
+>>>>>>> Stashed changes
+import PreventScreenshot from '../../../core/PreventScreenshot';
+import WarningExistingUserModal from '../../UI/WarningExistingUserModal';
+import { PREVIOUS_SCREEN, ONBOARDING } from '../../../constants/navigation';
+import { EXISTING_USER, METRICS_OPT_IN } from '../../../constants/storage';
+import { MetaMetricsEvents } from '../../../core/Analytics';
+import AnalyticsV2 from '../../../util/analyticsV2';
+
+import DefaultPreference from 'react-native-default-preference';
+import { Authentication } from '../../../core';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import AnimatedFox from 'react-native-animated-fox';
+import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onboarding.selectors';
+
+<<<<<<< Updated upstream
+=======
+const styles = StyleSheet.create({
+	scroll: {
+		flexGrow: 1
+	},
+	wrapper: {
+		paddingHorizontal: 40,
+		paddingVertical: 30,
+		flex: 1,
+		alignItems: 'center'
+	},
+	foxWrapper: {
+		width: Device.isIos() ? 90 : 45,
+		height: Device.isIos() ? 90 : 45,
+		marginVertical: 20
+	},
+	image: {
+		alignSelf: 'center',
+		width: Device.isIos() ? 90 : 45,
+		height: Device.isIos() ? 90 : 45
+	},
+	termsAndConditions: {
+		paddingVertical: 30
+	},
+	title: {
+		fontSize: 24,
+		color: colors.fontPrimary,
+		...fontStyles.bold,
+		textAlign: 'center'
+	},
+	ctas: {
+		flex: 1,
+		position: 'relative'
+	},
+	footer: {
+		marginTop: -20,
+		marginBottom: 20
+	},
+	login: {
+		fontSize: 18,
+		color: colors.blue,
+		...fontStyles.normal
+	},
+	buttonDescription: {
+		...fontStyles.normal,
+		fontSize: 14,
+		textAlign: 'center',
+		marginBottom: 16,
+		color: colors.fontPrimary,
+		lineHeight: 20
+	},
+	importWrapper: {
+		marginVertical: 24
+	},
+	createWrapper: {
+		position: 'absolute',
+		width: '100%',
+		bottom: 0
+	},
+	buttonWrapper: {
+		flexGrow: 1,
+		marginBottom: 16
+	},
+	scanTitle: {
+		fontSize: 18,
+		color: colors.fontPrimary,
+		fontWeight: 'bold'
+	},
+	steps: {
+		paddingVertical: 24
+	},
+	step: {
+		fontSize: 16,
+		color: colors.fontPrimary
+	},
+	loader: {
+		marginTop: 180,
+		justifyContent: 'center',
+		textAlign: 'center'
+	},
+	loadingText: {
+		marginTop: 30,
+		fontSize: 14,
+		textAlign: 'center',
+		color: colors.fontPrimary,
+		...fontStyles.normal
+	},
+	stepsWrapper: {
+		paddingHorizontal: 40,
+		paddingVertical: 30,
+		display: 'flex'
+	},
+	column: {
+		flexDirection: 'column'
+	},
+	row: {
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		flex: 1
+	},
+	bullet: {
+		width: 20
+	},
+	bulletText: {
+		flex: 1
+	}
+});
+=======
+import {
+  getTransparentBackOnboardingNavbarOptions,
+  getTransparentOnboardingNavbarOptions,
+} from '../../UI/Navbar';
+import Device from '../../../util/device';
+import BaseNotification from '../../UI/Notification/BaseNotification';
 import ElevatedView from 'react-native-elevated-view';
 import { loadingSet, loadingUnset } from '../../../actions/user';
 import PreventScreenshot from '../../../core/PreventScreenshot';
 import WarningExistingUserModal from '../../UI/WarningExistingUserModal';
 import { PREVIOUS_SCREEN, ONBOARDING } from '../../../constants/navigation';
 import { EXISTING_USER, METRICS_OPT_IN } from '../../../constants/storage';
+import { MetaMetricsEvents } from '../../../core/Analytics';
 import AnalyticsV2 from '../../../util/analyticsV2';
+
 import DefaultPreference from 'react-native-default-preference';
+import { Authentication } from '../../../core';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import AnimatedFox from 'react-native-animated-fox';
+<<<<<<< HEAD
+import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onboarding.selectors';
+=======
 import Routes from '../../../constants/navigation/Routes';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import {
@@ -53,9 +211,12 @@ import {
   WALLET_SETUP_SCREEN_DESCRIPTION_ID,
   WALLET_SETUP_SCREEN_IMPORT_FROM_SEED_BUTTON_ID,
   WALLET_SETUP_CREATE_NEW_WALLET_BUTTON_ID,
-} from '../../../../wdio/features/testIDs/Screens/WalletSetupScreen.testIds';
+} from '../../../../wdio/screen-objects/testIDs/Screens/WalletSetupScreen.testIds';
+>>>>>>> upstream/testflight/4754-permission-system
 
-const PUB_KEY = process.env.MM_PUBNUB_PUB_KEY;
+>>>>>>> Stashed changes
+import Routes from '../../../constants/navigation/Routes';
+import { selectAccounts } from '../../../selectors/accountTrackerController';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -77,13 +238,7 @@ const createStyles = (colors) =>
       width: Device.isIos() ? 90 : 45,
       height: Device.isIos() ? 90 : 45,
     },
-    termsAndConditions: {
-      paddingBottom: 30,
-    },
     title: {
-      fontSize: 24,
-      color: colors.text.default,
-      ...fontStyles.bold,
       textAlign: 'center',
     },
     ctas: {
@@ -100,12 +255,8 @@ const createStyles = (colors) =>
       ...fontStyles.normal,
     },
     buttonDescription: {
-      ...fontStyles.normal,
-      fontSize: 14,
       textAlign: 'center',
       marginBottom: 16,
-      color: colors.text.default,
-      lineHeight: 20,
     },
     importWrapper: {
       marginVertical: 24,
@@ -125,10 +276,7 @@ const createStyles = (colors) =>
     },
     loadingText: {
       marginTop: 30,
-      fontSize: 14,
       textAlign: 'center',
-      color: colors.text.default,
-      ...fontStyles.normal,
     },
     modalTypeView: {
       position: 'absolute',
@@ -144,6 +292,10 @@ const createStyles = (colors) =>
       alignItems: 'flex-end',
     },
   });
+<<<<<<< Updated upstream
+=======
+>>>>>>> upstream/main
+>>>>>>> Stashed changes
 
 /**
  * View that is displayed to first time (new) users
@@ -182,19 +334,55 @@ class Onboarding extends PureComponent {
      * Object that represents the current route info like params passed to it
      */
     route: PropTypes.object,
-    logOut: PropTypes.func,
   };
 
+<<<<<<< Updated upstream
   notificationAnimated = new Animated.Value(100);
   detailsYAnimated = new Animated.Value(0);
   actionXAnimated = new Animated.Value(0);
   detailsAnimated = new Animated.Value(0);
+=======
+<<<<<<< HEAD
+	static propTypes = {
+		/**
+		 * The navigator object
+		 */
+		navigation: PropTypes.object,
+		/**
+		 * redux flag that indicates if the user set a password
+		 */
+		passwordSet: PropTypes.bool,
+		/**
+		 * Save onboarding event to state
+		 */
+		saveOnboardingEvent: PropTypes.func,
+		/**
+		 * Selected address
+		 */
+		selectedAddress: PropTypes.string,
+		/**
+		 * The action to update the password set flag
+		 * in the redux store
+		 */
+		passwordHasBeenSet: PropTypes.func,
+		/**
+		 * The action to update set the locktime
+		 * in the redux store
+		 */
+		setLockTime: PropTypes.func,
+		/**
+		 * The action to update the seedphrase backed up flag
+		 * in the redux store
+		 */
+		seedphraseBackedUp: PropTypes.func
+	};
+>>>>>>> Stashed changes
 
   animatedTimingStart = (animatedRef, toValue) => {
     Animated.timing(animatedRef, {
       toValue,
       duration: 500,
-      easing: EasingNode.linear,
+      easing: Easing.linear,
       useNativeDriver: true,
     }).start();
   };
@@ -244,6 +432,7 @@ class Onboarding extends PureComponent {
     this.updateNavBar();
     this.mounted = true;
     this.checkIfExistingUser();
+
     InteractionManager.runAfterInteractions(() => {
       PreventScreenshot.forbid();
       if (this.props.route.params?.delete) {
@@ -258,7 +447,6 @@ class Onboarding extends PureComponent {
 
   componentWillUnmount() {
     this.mounted = false;
-    this.pubnubWrapper && this.pubnubWrapper.disconnectWebsockets();
     this.props.unsetLoading();
     InteractionManager.runAfterInteractions(PreventScreenshot.allow);
   }
@@ -274,21 +462,14 @@ class Onboarding extends PureComponent {
     }
   }
 
-  logOut = () => {
-    this.props.navigation.navigate(Routes.ONBOARDING.LOGIN);
-    this.props.logOut();
-  };
-
   onLogin = async () => {
     const { passwordSet } = this.props;
     if (!passwordSet) {
-      const { KeyringController } = Engine.context;
-      // Restore vault with empty password
-      await KeyringController.submitPassword('');
-      await SecureKeychain.resetGenericPassword();
-      this.props.navigation.navigate('HomeNav');
+      await Authentication.resetVault();
+      this.props.navigation.replace(Routes.ONBOARDING.HOME_NAV);
     } else {
-      this.logOut();
+      await Authentication.lockApp();
+      this.props.navigation.replace(Routes.ONBOARDING.LOGIN);
     }
   };
 
@@ -307,44 +488,14 @@ class Onboarding extends PureComponent {
         this.props.navigation.navigate('ChoosePassword', {
           [PREVIOUS_SCREEN]: ONBOARDING,
         });
-        this.track(AnalyticsV2.ANALYTICS_EVENTS.WALLET_SETUP_STARTED);
+        this.track(MetaMetricsEvents.WALLET_SETUP_STARTED);
       } else {
         this.props.navigation.navigate('OptinMetrics', {
           onContinue: () => {
             this.props.navigation.replace('ChoosePassword', {
               [PREVIOUS_SCREEN]: ONBOARDING,
             });
-            this.track(AnalyticsV2.ANALYTICS_EVENTS.WALLET_SETUP_STARTED);
-          },
-        });
-      }
-    };
-    this.handleExistingUser(action);
-  };
-
-  onPressSync = () => {
-    if (!PUB_KEY) {
-      // Dev message
-      Alert.alert(
-        'This feature has been disabled',
-        `Because you did not set the .js.env file. Look at .js.env.example for more information`,
-      );
-      return false;
-    }
-    const action = async () => {
-      const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
-      if (metricsOptIn) {
-        this.props.navigation.navigate('ExtensionSync', {
-          [PREVIOUS_SCREEN]: ONBOARDING,
-        });
-        this.track(AnalyticsV2.ANALYTICS_EVENTS.WALLET_SYNC_STARTED);
-      } else {
-        this.props.navigation.navigate('OptinMetrics', {
-          onContinue: () => {
-            this.props.navigation.replace('ExtensionSync', {
-              [PREVIOUS_SCREEN]: ONBOARDING,
-            });
-            this.track(AnalyticsV2.ANALYTICS_EVENTS.WALLET_SYNC_STARTED);
+            this.track(MetaMetricsEvents.WALLET_SETUP_STARTED);
           },
         });
       }
@@ -356,13 +507,17 @@ class Onboarding extends PureComponent {
     const action = async () => {
       const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
       if (metricsOptIn) {
-        this.props.navigation.push('ImportFromSeed');
-        this.track(AnalyticsV2.ANALYTICS_EVENTS.WALLET_IMPORT_STARTED);
+        this.props.navigation.push(
+          Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE,
+        );
+        this.track(MetaMetricsEvents.WALLET_IMPORT_STARTED);
       } else {
         this.props.navigation.navigate('OptinMetrics', {
           onContinue: () => {
-            this.props.navigation.replace('ImportFromSeed');
-            this.track(AnalyticsV2.ANALYTICS_EVENTS.WALLET_IMPORT_STARTED);
+            this.props.navigation.replace(
+              Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE,
+            );
+            this.track(MetaMetricsEvents.WALLET_IMPORT_STARTED);
           },
         });
       }
@@ -417,15 +572,16 @@ class Onboarding extends PureComponent {
     return (
       <View style={styles.ctas}>
         <Text
+          variant={TextVariant.HeadingLG}
           style={styles.title}
-          {...generateTestId(Platform, WALLET_SETUP_SCREEN_TITLE_ID)}
+          testID={OnboardingSelectorIDs.SCREEN_TITLE}
         >
           {strings('onboarding.title')}
         </Text>
         <View style={styles.importWrapper}>
           <Text
             style={styles.buttonDescription}
-            {...generateTestId(Platform, WALLET_SETUP_SCREEN_DESCRIPTION_ID)}
+            testID={OnboardingSelectorIDs.SCREEN_DESCRIPTION}
           >
             {strings('onboarding.import')}
           </Text>
@@ -435,29 +591,16 @@ class Onboarding extends PureComponent {
             <StyledButton
               type={'normal'}
               onPress={this.onPressImport}
-              testID={WALLET_SETUP_SCREEN_IMPORT_FROM_SEED_BUTTON_ID}
+              testID={OnboardingSelectorIDs.IMPORT_SEED_BUTTON}
             >
               {strings('import_wallet.import_from_seed_button')}
             </StyledButton>
           </View>
-          {/* Temporarily Disable Sync until the new improved version is ready for release */}
-          {__DEV__ && (
-            <View style={styles.buttonWrapper}>
-              <StyledButton
-                style={styles.button}
-                type={'normal'}
-                onPress={this.onPressSync}
-                testID={'onboarding-import-button'}
-              >
-                {strings('import_wallet.sync_from_browser_extension_button')}
-              </StyledButton>
-            </View>
-          )}
           <View style={styles.buttonWrapper}>
             <StyledButton
               type={'blue'}
               onPress={this.onPressCreate}
-              testID={WALLET_SETUP_CREATE_NEW_WALLET_BUTTON_ID}
+              testID={OnboardingSelectorIDs.NEW_WALLET_BUTTON}
             >
               {strings('onboarding.start_exploring_now')}
             </StyledButton>
@@ -500,7 +643,10 @@ class Onboarding extends PureComponent {
     const styles = createStyles(colors);
 
     return (
-      <View style={baseStyles.flexGrow} testID={'onboarding-screen'}>
+      <View
+        style={baseStyles.flexGrow}
+        testID={OnboardingSelectorIDs.CONTAINER_ID}
+      >
         <OnboardingScreenWithBg screen={'c'}>
           <ScrollView
             style={baseStyles.flexGrow}
@@ -530,9 +676,6 @@ class Onboarding extends PureComponent {
               </View>
             )}
           </ScrollView>
-          <View style={styles.termsAndConditions}>
-            <TermsAndConditions navigation={this.props.navigation} />
-          </View>
         </OnboardingScreenWithBg>
         <FadeOutOverlay />
 
@@ -552,7 +695,349 @@ class Onboarding extends PureComponent {
 Onboarding.contextType = ThemeContext;
 
 const mapStateToProps = (state) => ({
-  accounts: state.engine.backgroundState.AccountTrackerController.accounts,
+  accounts: selectAccounts(state),
+  passwordSet: state.user.passwordSet,
+  loading: state.user.loadingSet,
+  loadingMsg: state.user.loadingMsg,
+});
+
+<<<<<<< Updated upstream
+const mapDispatchToProps = (dispatch) => ({
+  setLoading: (msg) => dispatch(loadingSet(msg)),
+  unsetLoading: () => dispatch(loadingUnset()),
+  saveOnboardingEvent: (event) => dispatch(saveOnboardingEvent(event)),
+});
+
+=======
+const mapDispatchToProps = dispatch => ({
+	passwordHasBeenSet: () => dispatch(passwordSet()),
+	setLockTime: time => dispatch(setLockTime(time)),
+	seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
+	saveOnboardingEvent: event => dispatch(saveOnboardingEvent(event))
+=======
+  notificationAnimated = new Animated.Value(100);
+  detailsYAnimated = new Animated.Value(0);
+  actionXAnimated = new Animated.Value(0);
+  detailsAnimated = new Animated.Value(0);
+
+  animatedTimingStart = (animatedRef, toValue) => {
+    Animated.timing(animatedRef, {
+      toValue,
+      duration: 500,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  state = {
+    warningModalVisible: false,
+    loading: false,
+    existingUser: false,
+  };
+
+  seedwords = null;
+  importedAccounts = null;
+  channelName = null;
+  incomingDataStr = '';
+  dataToSync = null;
+  mounted = false;
+
+  warningCallback = () => true;
+
+  showNotification = () => {
+    // show notification
+    this.animatedTimingStart(this.notificationAnimated, 0);
+    // hide notification
+    setTimeout(() => {
+      this.animatedTimingStart(this.notificationAnimated, 200);
+    }, 4000);
+    this.disableBackPress();
+  };
+
+  disableBackPress = () => {
+    // Disable back press
+    const hardwareBackPress = () => true;
+    BackHandler.addEventListener('hardwareBackPress', hardwareBackPress);
+  };
+
+  updateNavBar = () => {
+    const { route, navigation } = this.props;
+    const colors = this.context.colors || mockTheme.colors;
+    navigation.setOptions(
+      route.params?.delete
+        ? getTransparentOnboardingNavbarOptions(colors)
+        : getTransparentBackOnboardingNavbarOptions(colors),
+    );
+  };
+
+  componentDidMount() {
+    this.updateNavBar();
+    this.mounted = true;
+    this.checkIfExistingUser();
+
+    InteractionManager.runAfterInteractions(() => {
+      PreventScreenshot.forbid();
+      if (this.props.route.params?.delete) {
+        this.props.setLoading(strings('onboarding.delete_current'));
+        setTimeout(() => {
+          this.showNotification();
+          this.props.unsetLoading();
+        }, 2000);
+      }
+    });
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+    this.props.unsetLoading();
+    InteractionManager.runAfterInteractions(PreventScreenshot.allow);
+  }
+
+  componentDidUpdate = () => {
+    this.updateNavBar();
+  };
+
+  async checkIfExistingUser() {
+    const existingUser = await AsyncStorage.getItem(EXISTING_USER);
+    if (existingUser !== null) {
+      this.setState({ existingUser: true });
+    }
+  }
+
+  onLogin = async () => {
+    const { passwordSet } = this.props;
+    if (!passwordSet) {
+      await Authentication.resetVault();
+      this.props.navigation.replace(Routes.ONBOARDING.HOME_NAV);
+    } else {
+      await Authentication.lockApp();
+      this.props.navigation.replace(Routes.ONBOARDING.LOGIN);
+    }
+  };
+
+  handleExistingUser = (action) => {
+    if (this.state.existingUser) {
+      this.alertExistingUser(action);
+    } else {
+      action();
+    }
+  };
+
+  onPressCreate = () => {
+    const action = async () => {
+      const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
+      if (metricsOptIn) {
+        this.props.navigation.navigate('ChoosePassword', {
+          [PREVIOUS_SCREEN]: ONBOARDING,
+        });
+        this.track(MetaMetricsEvents.WALLET_SETUP_STARTED);
+      } else {
+        this.props.navigation.navigate('OptinMetrics', {
+          onContinue: () => {
+            this.props.navigation.replace('ChoosePassword', {
+              [PREVIOUS_SCREEN]: ONBOARDING,
+            });
+            this.track(MetaMetricsEvents.WALLET_SETUP_STARTED);
+          },
+        });
+      }
+    };
+    this.handleExistingUser(action);
+  };
+
+  onPressImport = () => {
+    const action = async () => {
+      const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
+      if (metricsOptIn) {
+        this.props.navigation.push(
+          Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE,
+        );
+        this.track(MetaMetricsEvents.WALLET_IMPORT_STARTED);
+      } else {
+        this.props.navigation.navigate('OptinMetrics', {
+          onContinue: () => {
+            this.props.navigation.replace(
+              Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE,
+            );
+            this.track(MetaMetricsEvents.WALLET_IMPORT_STARTED);
+          },
+        });
+      }
+    };
+    this.handleExistingUser(action);
+  };
+
+  track = (...eventArgs) => {
+    InteractionManager.runAfterInteractions(async () => {
+      if (Analytics.checkEnabled()) {
+        AnalyticsV2.trackEvent(...eventArgs);
+        return;
+      }
+      const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
+      if (!metricsOptIn) {
+        this.props.saveOnboardingEvent(eventArgs);
+      }
+    });
+  };
+
+  alertExistingUser = (callback) => {
+    this.warningCallback = () => {
+      callback();
+      this.toggleWarningModal();
+    };
+    this.toggleWarningModal();
+  };
+
+  toggleWarningModal = () => {
+    const warningModalVisible = this.state.warningModalVisible;
+    this.setState({ warningModalVisible: !warningModalVisible });
+  };
+
+  renderLoader = () => {
+    const colors = this.context.colors || mockTheme.colors;
+    const styles = createStyles(colors);
+
+    return (
+      <View style={styles.wrapper}>
+        <View style={styles.loader}>
+          <ActivityIndicator size="small" />
+          <Text style={styles.loadingText}>{this.props.loadingMsg}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  renderContent() {
+    const colors = this.context.colors || mockTheme.colors;
+    const styles = createStyles(colors);
+
+    return (
+      <View style={styles.ctas}>
+        <Text
+          variant={TextVariant.HeadingLG}
+          style={styles.title}
+          testID={OnboardingSelectorIDs.SCREEN_TITLE}
+        >
+          {strings('onboarding.title')}
+        </Text>
+        <View style={styles.importWrapper}>
+          <Text
+            style={styles.buttonDescription}
+            testID={OnboardingSelectorIDs.SCREEN_DESCRIPTION}
+          >
+            {strings('onboarding.import')}
+          </Text>
+        </View>
+        <View style={styles.createWrapper}>
+          <View style={styles.buttonWrapper}>
+            <StyledButton
+              type={'normal'}
+              onPress={this.onPressImport}
+              testID={OnboardingSelectorIDs.IMPORT_SEED_BUTTON}
+            >
+              {strings('import_wallet.import_from_seed_button')}
+            </StyledButton>
+          </View>
+          <View style={styles.buttonWrapper}>
+            <StyledButton
+              type={'blue'}
+              onPress={this.onPressCreate}
+              testID={OnboardingSelectorIDs.NEW_WALLET_BUTTON}
+            >
+              {strings('onboarding.start_exploring_now')}
+            </StyledButton>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  handleSimpleNotification = () => {
+    const colors = this.context.colors || mockTheme.colors;
+    const styles = createStyles(colors);
+
+    if (!this.props.route.params?.delete) return;
+    return (
+      <Animated.View
+        style={[
+          styles.notificationContainer,
+          { transform: [{ translateY: this.notificationAnimated }] },
+        ]}
+      >
+        <ElevatedView style={styles.modalTypeView} elevation={100}>
+          <BaseNotification
+            closeButtonDisabled
+            status="success"
+            data={{
+              title: strings('onboarding.success'),
+              description: strings('onboarding.your_wallet'),
+            }}
+          />
+        </ElevatedView>
+      </Animated.View>
+    );
+  };
+
+  render() {
+    const { loading } = this.props;
+    const { existingUser } = this.state;
+    const colors = this.context.colors || mockTheme.colors;
+    const styles = createStyles(colors);
+
+    return (
+      <View
+        style={baseStyles.flexGrow}
+        testID={OnboardingSelectorIDs.CONTAINER_ID}
+      >
+        <OnboardingScreenWithBg screen={'c'}>
+          <ScrollView
+            style={baseStyles.flexGrow}
+            contentContainerStyle={styles.scroll}
+          >
+            <View style={styles.wrapper}>
+              {loading && (
+                <View style={styles.foxWrapper}>
+                  {Device.isAndroid() ? (
+                    <Image
+                      source={require('../../../images/fox.png')}
+                      style={styles.image}
+                      resizeMethod={'auto'}
+                    />
+                  ) : (
+                    <AnimatedFox bgColor={colors.background.default} />
+                  )}
+                </View>
+              )}
+              {loading ? this.renderLoader() : this.renderContent()}
+            </View>
+            {existingUser && !loading && (
+              <View style={styles.footer}>
+                <Button style={styles.login} onPress={this.onLogin}>
+                  {strings('onboarding.unlock')}
+                </Button>
+              </View>
+            )}
+          </ScrollView>
+        </OnboardingScreenWithBg>
+        <FadeOutOverlay />
+
+        <View>{this.handleSimpleNotification()}</View>
+
+        <WarningExistingUserModal
+          warningModalVisible={this.state.warningModalVisible}
+          onCancelPress={this.warningCallback}
+          onRequestClose={this.toggleWarningModal}
+          onConfirmPress={this.toggleWarningModal}
+        />
+      </View>
+    );
+  }
+}
+
+Onboarding.contextType = ThemeContext;
+
+const mapStateToProps = (state) => ({
+  accounts: selectAccounts(state),
   passwordSet: state.user.passwordSet,
   loading: state.user.loadingSet,
   loadingMsg: state.user.loadingMsg,
@@ -562,6 +1047,8 @@ const mapDispatchToProps = (dispatch) => ({
   setLoading: (msg) => dispatch(loadingSet(msg)),
   unsetLoading: () => dispatch(loadingUnset()),
   saveOnboardingEvent: (event) => dispatch(saveOnboardingEvent(event)),
+>>>>>>> upstream/main
 });
 
+>>>>>>> Stashed changes
 export default connect(mapStateToProps, mapDispatchToProps)(Onboarding);

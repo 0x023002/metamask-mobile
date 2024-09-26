@@ -21,6 +21,10 @@ export function clearHistory() {
     type: 'CLEAR_BROWSER_HISTORY',
     id: Date.now(),
   };
+	return {
+		type: 'CLEAR_BROWSER_HISTORY',
+		id: Date.now(),
+	};
 }
 
 /**
@@ -92,5 +96,20 @@ export function updateTab(id, data) {
     type: 'UPDATE_TAB',
     id,
     data,
+  };
+}
+
+/**
+ * Stores the favicon url using the origin as key
+ * @param {Object} favicon - favicon to store
+ * @param {string} favicon.origin - the origin of the favicon as key
+ * @param {string} favicon.url - the favicon image url
+ * @returns {{favicon, type: string}}
+ */
+export function storeFavicon({ origin, url }) {
+  return {
+    type: 'STORE_FAVICON_URL',
+    origin,
+    url,
   };
 }

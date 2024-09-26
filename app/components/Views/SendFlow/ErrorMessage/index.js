@@ -4,6 +4,11 @@ import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import Alert, { AlertType } from '../../../Base/Alert';
 import Text from '../../../Base/Text';
+<<<<<<< HEAD
+import { CommonSelectorsIDs } from '../../../../../e2e/selectors/Common.selectors';
+=======
+import { SEND_WARNING_MESSAGE } from '../../../../../wdio/screen-objects/testIDs/Screens/SendScreen.testIds';
+>>>>>>> upstream/testflight/4754-permission-system
 
 const styles = StyleSheet.create({
   button: {
@@ -18,13 +23,14 @@ const styles = StyleSheet.create({
 export default function ErrorMessage(props) {
   const { errorMessage, errorContinue, onContinue, isOnlyWarning } = props;
   return (
-    <Alert
-      type={isOnlyWarning ? AlertType.Info : AlertType.Error}
-      testID={'error-message-warning'}
-    >
+    <Alert type={isOnlyWarning ? AlertType.Info : AlertType.Error}>
       {(textStyle) => (
         <View>
-          <Text small style={[textStyle, styles.errorMessage]}>
+          <Text
+            small
+            style={[textStyle, styles.errorMessage]}
+            testID={CommonSelectorsIDs.ERROR_MESSAGE}
+          >
             {errorMessage}
           </Text>
           {errorContinue && (
@@ -38,6 +44,38 @@ export default function ErrorMessage(props) {
       )}
     </Alert>
   );
+<<<<<<< Updated upstream
+	button: {
+		marginTop: 27,
+		marginBottom: 12,
+	},
+	errorMessage: {
+		flex: 0,
+	},
+});
+
+export default function ErrorMessage(props) {
+	const { errorMessage, errorContinue, onContinue, isOnlyWarning } = props;
+	return (
+		<Alert type={isOnlyWarning ? AlertType.Info : AlertType.Error} testID={'error-message-warning'}>
+			{(textStyle) => (
+				<View>
+					<Text small style={[textStyle, styles.errorMessage]}>
+						{errorMessage}
+					</Text>
+					{errorContinue && (
+						<TouchableOpacity onPress={onContinue} style={styles.button}>
+							<Text small link centered>
+								{strings('transaction.continueError')}
+							</Text>
+						</TouchableOpacity>
+					)}
+				</View>
+			)}
+		</Alert>
+	);
+=======
+>>>>>>> Stashed changes
 }
 
 ErrorMessage.propTypes = {

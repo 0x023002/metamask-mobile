@@ -38,6 +38,12 @@ export function findRouteNameFromNavigatorState(routes) {
   if (name === 'Main' || name === 'WalletTabHome' || name === 'Home')
     name = 'WalletView';
   if (name === 'TransactionsHome') name = 'TransactionsView';
+<<<<<<< Updated upstream
+	// For compatibility with the previous way on react navigation 4
+	if (name === 'Main' || name === 'WalletTabHome' || name === 'Home') name = 'WalletView';
+	if (name === 'TransactionsHome') name = 'TransactionsView';
+=======
+>>>>>>> Stashed changes
 
   return name;
 }
@@ -95,4 +101,24 @@ export const getURLProtocol = (url) => {
   } catch {
     return;
   }
+};
+
+/**
+ * Method to verify if the uri is from ipfs or not
+ * /ipfs/ -> true
+ * ipfs:// -> true
+ * ipfs://ipfs/ -> true
+ * https:// -> false
+ * @param {string | null | undefined} uri - string representing the source uri to the file
+ * @returns true if it's an ipfs url
+ */
+export const isIPFSUri = (uri) => {
+  if (!uri?.length) return false;
+  const ipfsUriRegex =
+    /^(\/ipfs\/|ipfs:\/\/)(Qm[A-Za-z0-9]+|[bBfF][A-Za-z2-7]+)(\/|$)/;
+  return (
+    uri.startsWith('/ipfs/') ||
+    uri.startsWith('ipfs://') ||
+    ipfsUriRegex.test(uri)
+  );
 };

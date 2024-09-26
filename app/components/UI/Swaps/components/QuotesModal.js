@@ -28,6 +28,10 @@ import Text from '../../../Base/Text';
 import Title from '../../../Base/Title';
 import Ratio from './Ratio';
 import { useTheme } from '../../../../util/theme';
+import {
+  selectConversionRate,
+  selectCurrentCurrency,
+} from '../../../../selectors/currencyRateController';
 
 const createStyles = (colors, shadows) =>
   StyleSheet.create({
@@ -110,18 +114,6 @@ const createStyles = (colors, shadows) =>
     red: {
       color: colors.error.default,
     },
-    bestBadge: {
-      flexDirection: 'row',
-    },
-    bestBadgeWrapper: {
-      paddingVertical: 0,
-      paddingHorizontal: 8,
-      backgroundColor: colors.primary.default,
-      borderRadius: 4,
-    },
-    bestBadgeText: {
-      color: colors.primary.inverse,
-    },
     transparent: {
       opacity: 0,
     },
@@ -146,7 +138,7 @@ function QuotesModal({
   quoteValues,
   showOverallValue,
   ticker,
-  multiLayerL1FeeTotal,
+  multiLayerL1ApprovalFeeTotal,
 }) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
@@ -225,10 +217,13 @@ function QuotesModal({
     }
   }, [displayDetails, selectedDetailsQuote]);
 
-  const selectedDetailsQuoteValuesEthFee = calculateEthFeeForMultiLayer({
-    multiLayerL1FeeTotal,
-    ethFee: selectedDetailsQuoteValues?.ethFee,
-  });
+  let selectedDetailsQuoteValuesEthFee = selectedDetailsQuoteValues?.ethFee;
+  if (multiLayerL1ApprovalFeeTotal) {
+    selectedDetailsQuoteValuesEthFee = calculateEthFeeForMultiLayer({
+      multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
+      ethFee: selectedDetailsQuoteValuesEthFee,
+    });
+  }
 
   return (
     <Modal
@@ -393,10 +388,13 @@ function QuotesModal({
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
                       const quoteValue = quoteValues[aggregator];
-                      const quoteEthFee = calculateEthFeeForMultiLayer({
-                        multiLayerL1FeeTotal,
-                        ethFee: quoteValue?.ethFee,
-                      });
+                      let quoteEthFee = quoteValue?.ethFee;
+                      if (multiLayerL1ApprovalFeeTotal) {
+                        quoteEthFee = calculateEthFeeForMultiLayer({
+                          multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
+                          ethFee: quoteEthFee,
+                        });
+                      }
                       return (
                         <TouchableOpacity
                           key={aggregator}
@@ -426,23 +424,7 @@ function QuotesModal({
                             </Text>
                           </View>
                           <View style={styles.columnValue}>
-                            {index === 0 ? (
-                              showOverallValue ? (
-                                <View style={styles.bestBadge}>
-                                  <View style={styles.bestBadgeWrapper}>
-                                    <Text
-                                      bold
-                                      small
-                                      style={styles.bestBadgeText}
-                                    >
-                                      {strings('swaps.best')}
-                                    </Text>
-                                  </View>
-                                </View>
-                              ) : (
-                                <Text> - </Text>
-                              )
-                            ) : showOverallValue ? (
+                            {showOverallValue ? (
                               <Text primary style={styles.red}>
                                 -
                                 {weiToFiat(
@@ -515,14 +497,12 @@ QuotesModal.propTypes = {
   ticker: PropTypes.string,
   quoteValues: PropTypes.object,
   showOverallValue: PropTypes.bool,
-  multiLayerL1FeeTotal: PropTypes.string,
+  multiLayerL1ApprovalFeeTotal: PropTypes.string,
 };
 
 const mapStateToProps = (state) => ({
-  conversionRate:
-    state.engine.backgroundState.CurrencyRateController.conversionRate,
-  currentCurrency:
-    state.engine.backgroundState.CurrencyRateController.currentCurrency,
+  conversionRate: selectConversionRate(state),
+  currentCurrency: selectCurrentCurrency(state),
   quoteValues: state.engine.backgroundState.SwapsController.quoteValues,
 });
 

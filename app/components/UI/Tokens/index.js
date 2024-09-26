@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import {
+  Alert,
   TouchableOpacity,
   StyleSheet,
   View,
@@ -19,15 +20,25 @@ import Logger from '../../../util/Logger';
 import AssetElement from '../AssetElement';
 import { connect } from 'react-redux';
 import { safeToChecksumAddress } from '../../../util/address';
-import Analytics from '../../../core/Analytics/Analytics';
+import Analytics from '../../../core/Analytics';
 import AnalyticsV2 from '../../../util/analyticsV2';
+import { ANALYTICS_EVENT_OPTS } from '../../../util/analytics';
 import NetworkMainAssetLogo from '../NetworkMainAssetLogo';
 import { getTokenList } from '../../../reducers/tokens';
 import { isZero } from '../../../util/lodash';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import Text from '../../Base/Text';
+<<<<<<< HEAD
+=======
 import NotificationManager from '../../../core/NotificationManager';
 import { getDecimalChainId, isTestNet } from '../../../util/networks';
+import generateTestId from '../../../../wdio/utils/generateTestId';
+import {
+  IMPORT_TOKEN_BUTTON_ID,
+  MAIN_WALLET_VIEW_VIA_TOKENS_ID,
+} from '../../../../wdio/screen-objects/testIDs/Screens/WalletView.testIds';
+import { createDetectedTokensNavDetails } from '../../Views/DetectedTokens';
+>>>>>>> upstream/testflight/4754-permission-system
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -57,17 +68,6 @@ const createStyles = (colors) =>
       color: colors.primary.default,
       ...fontStyles.normal,
     },
-    tokensDetectedButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 16,
-    },
-    tokensDetectedText: {
-      fontSize: 14,
-      color: colors.primary.default,
-      ...fontStyles.normal,
-    },
     footer: {
       flex: 1,
       paddingBottom: 30,
@@ -83,11 +83,6 @@ const createStyles = (colors) =>
       color: colors.text.default,
       ...fontStyles.normal,
       textTransform: 'uppercase',
-    },
-    testNetBalance: {
-      fontSize: 16,
-      color: colors.text.default,
-      ...fontStyles.normal,
     },
     balanceFiat: {
       fontSize: 12,
@@ -127,10 +122,6 @@ class Tokens extends PureComponent {
      */
     tokens: PropTypes.array,
     /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-    /**
      * ETH to current currency conversion rate
      */
     conversionRate: PropTypes.number,
@@ -162,14 +153,6 @@ class Tokens extends PureComponent {
      * List of tokens from TokenListController
      */
     tokenList: PropTypes.object,
-    /**
-     * List of detected tokens from TokensController
-     */
-    detectedTokens: PropTypes.array,
-    /**
-     * Boolean that indicates if token detection is enabled
-     */
-    isTokenDetectionEnabled: PropTypes.bool,
   };
 
   actionSheet = null;
@@ -180,14 +163,9 @@ class Tokens extends PureComponent {
     isAddTokenEnabled: true,
   };
 
-  getStyles = () => {
+  renderEmpty = () => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    return styles;
-  };
-
-  renderEmpty = () => {
-    const styles = this.getStyles();
 
     return (
       <View style={styles.emptyView}>
@@ -204,7 +182,8 @@ class Tokens extends PureComponent {
   };
 
   renderFooter = () => {
-    const styles = this.getStyles();
+    const colors = this.context.colors || mockTheme.colors;
+    const styles = createStyles(colors);
 
     return (
       <View style={styles.footer} key={'tokens-footer'}>
@@ -231,9 +210,9 @@ class Tokens extends PureComponent {
       tokenExchangeRates,
       primaryCurrency,
       tokenList,
-      chainId,
     } = this.props;
-    const styles = this.getStyles();
+    const colors = this.context.colors || mockTheme.colors;
+    const styles = createStyles(colors);
 
     const itemAddress = safeToChecksumAddress(asset.address);
     const logo = tokenList?.[itemAddress?.toLowerCase?.()]?.iconUrl;
@@ -286,11 +265,7 @@ class Tokens extends PureComponent {
         )}
 
         <View style={styles.balances} testID={'balance'}>
-          <Text
-            style={isTestNet(chainId) ? styles.testNetBalance : styles.balance}
-          >
-            {mainBalance}
-          </Text>
+          <Text style={styles.balance}>{mainBalance}</Text>
           {secondaryBalance ? (
             <Text
               style={[
@@ -307,36 +282,32 @@ class Tokens extends PureComponent {
   };
 
   goToBuy = () => {
-    this.props.navigation.navigate('FiatOnRampAggregator');
+    this.props.navigation.navigate('FiatOnRamp');
     InteractionManager.runAfterInteractions(() => {
-      Analytics.trackEventWithParameters(
-        AnalyticsV2.ANALYTICS_EVENTS.BUY_BUTTON_CLICKED,
-        {
-          text: 'Buy Native Token',
-          location: 'Home Screen',
-          chain_id_destination: this.props.chainId,
-        },
-      );
+      Analytics.trackEvent(ANALYTICS_EVENT_OPTS.WALLET_BUY_ETH);
+      AnalyticsV2.trackEvent(AnalyticsV2.ANALYTICS_EVENTS.ONRAMP_OPENED, {
+        button_location: 'Home Screen',
+        button_copy: 'Buy ETH',
+      });
     });
   };
 
+<<<<<<< HEAD
+=======
   showDetectedTokens = () => {
     const { NetworkController } = Engine.context;
     const { detectedTokens } = this.props;
-    this.props.navigation.navigate('DetectedTokens');
+    this.props.navigation.navigate(...createDetectedTokensNavDetails());
     InteractionManager.runAfterInteractions(() => {
-      AnalyticsV2.trackEvent(
-        AnalyticsV2.ANALYTICS_EVENTS.TOKEN_IMPORT_CLICKED,
-        {
-          source: 'detected',
-          chain_id: getDecimalChainId(
-            NetworkController?.state?.provider?.chainId,
-          ),
-          tokens: detectedTokens.map(
-            (token) => `${token.symbol} - ${token.address}`,
-          ),
-        },
-      );
+      AnalyticsV2.trackEvent(MetaMetricsEvents.TOKEN_IMPORT_CLICKED, {
+        source: 'detected',
+        chain_id: getDecimalChainId(
+          NetworkController?.state?.provider?.chainId,
+        ),
+        tokens: detectedTokens.map(
+          (token) => `${token.symbol} - ${token.address}`,
+        ),
+      });
       this.setState({ isAddTokenEnabled: true });
     });
   };
@@ -364,6 +335,7 @@ class Tokens extends PureComponent {
     );
   };
 
+>>>>>>> upstream/testflight/4754-permission-system
   renderList() {
     const { tokens, hideZeroBalanceTokens, tokenBalances } = this.props;
     const tokensToDisplay = hideZeroBalanceTokens
@@ -377,26 +349,16 @@ class Tokens extends PureComponent {
     return (
       <View>
         {tokensToDisplay.map((item) => this.renderItem(item))}
-        {this.renderTokensDetectedSection()}
         {this.renderFooter()}
       </View>
     );
   }
 
   goToAddToken = () => {
-    const { NetworkController } = Engine.context;
     this.setState({ isAddTokenEnabled: false });
     this.props.navigation.push('AddAsset', { assetType: 'token' });
     InteractionManager.runAfterInteractions(() => {
-      AnalyticsV2.trackEvent(
-        AnalyticsV2.ANALYTICS_EVENTS.TOKEN_IMPORT_CLICKED,
-        {
-          source: 'manual',
-          chain_id: getDecimalChainId(
-            NetworkController?.state?.provider?.chainId,
-          ),
-        },
-      );
+      Analytics.trackEvent(ANALYTICS_EVENT_OPTS.WALLET_ADD_TOKENS);
       this.setState({ isAddTokenEnabled: true });
     });
   };
@@ -406,33 +368,21 @@ class Tokens extends PureComponent {
     this.actionSheet.show();
   };
 
-  removeToken = async () => {
-    const { TokensController, NetworkController } = Engine.context;
+  removeToken = () => {
+    const { TokensController } = Engine.context;
     const tokenAddress = this.tokenToRemove?.address;
-    const symbol = this.tokenToRemove?.symbol;
     try {
-      await TokensController.ignoreTokens([tokenAddress]);
-      NotificationManager.showSimpleNotification({
-        status: `simple_notification`,
-        duration: 5000,
-        title: strings('wallet.token_toast.token_hidden_title'),
-        description: strings('wallet.token_toast.token_hidden_desc', {
-          tokenSymbol: symbol,
-        }),
-      });
-      InteractionManager.runAfterInteractions(() =>
-        AnalyticsV2.trackEvent(AnalyticsV2.ANALYTICS_EVENTS.TOKENS_HIDDEN, {
-          location: 'assets_list',
-          token_standard: 'ERC20',
-          asset_type: 'token',
-          tokens: [`${symbol} - ${tokenAddress}`],
-          chain_id: getDecimalChainId(
-            NetworkController?.state?.provider?.chainId,
-          ),
-        }),
+      TokensController.removeAndIgnoreToken(tokenAddress);
+      Alert.alert(
+        strings('wallet.token_removed_title'),
+        strings('wallet.token_removed_desc'),
       );
-    } catch (err) {
-      Logger.log(err, 'Wallet: Failed to hide token!');
+    } catch (error) {
+      Logger.log('Error while trying to remove token', error, tokenAddress);
+      Alert.alert(
+        strings('wallet.token_removal_issue_title'),
+        strings('wallet.token_removal_issue_desc'),
+      );
     }
   };
 
@@ -444,8 +394,9 @@ class Tokens extends PureComponent {
 
   render = () => {
     const { tokens } = this.props;
-    const styles = this.getStyles();
+    const colors = this.context.colors || mockTheme.colors;
     const themeAppearance = this.context.themeAppearance;
+    const styles = createStyles(colors);
 
     return (
       <View style={styles.wrapper} testID={'tokens'}>
@@ -465,7 +416,6 @@ class Tokens extends PureComponent {
 }
 
 const mapStateToProps = (state) => ({
-  chainId: state.engine.backgroundState.NetworkController.provider.chainId,
   currentCurrency:
     state.engine.backgroundState.CurrencyRateController.currentCurrency,
   conversionRate:
@@ -477,9 +427,6 @@ const mapStateToProps = (state) => ({
     state.engine.backgroundState.TokenRatesController.contractExchangeRates,
   hideZeroBalanceTokens: state.settings.hideZeroBalanceTokens,
   tokenList: getTokenList(state),
-  detectedTokens: state.engine.backgroundState.TokensController.detectedTokens,
-  isTokenDetectionEnabled:
-    state.engine.backgroundState.PreferencesController.useTokenDetection,
 });
 
 Tokens.contextType = ThemeContext;

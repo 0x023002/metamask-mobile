@@ -1,3 +1,37 @@
+// Constants
+export const LOCKED_APP = 'LOCKED_APP';
+export const AUTH_SUCCESS = 'AUTH_SUCCESS';
+export const AUTH_ERROR = 'AUTH_ERROR';
+export const INTERRUPT_BIOMETRICS = 'INTERRUPT_BIOMETRICS';
+export const LOGIN = 'LOGIN';
+export const LOGOUT = 'LOGOUT';
+
+export function interruptBiometrics() {
+  return {
+    type: INTERRUPT_BIOMETRICS,
+  };
+}
+
+export function lockApp() {
+  return {
+    type: LOCKED_APP,
+  };
+}
+
+export function authSuccess(bioStateMachineId) {
+  return {
+    type: AUTH_SUCCESS,
+    payload: { bioStateMachineId },
+  };
+}
+
+export function authError(bioStateMachineId) {
+  return {
+    type: AUTH_ERROR,
+    payload: { bioStateMachineId },
+  };
+}
+
 export function passwordSet() {
   return {
     type: 'PASSWORD_SET',
@@ -65,21 +99,15 @@ export function setGasEducationCarouselSeen() {
   };
 }
 
-export function setNftDetectionDismissed() {
-  return {
-    type: 'SET_NFT_DETECTION_DISMISSED',
-  };
-}
-
 export function logIn() {
   return {
-    type: 'LOGIN',
+    type: LOGIN,
   };
 }
 
 export function logOut() {
   return {
-    type: 'LOGOUT',
+    type: LOGOUT,
   };
 }
 
@@ -103,4 +131,44 @@ export function checkedAuth(initialScreen) {
       initialScreen,
     },
   };
+}
+
+export function setNftDetectionDismissed() {
+	return {
+		type: 'SET_NFT_DETECTION_DISMISSED',
+	};
+}
+
+export function logIn() {
+	return {
+		type: 'LOGIN',
+	};
+}
+
+export function logOut() {
+	return {
+		type: 'LOGOUT',
+	};
+}
+
+export function setAppTheme(theme) {
+	return {
+		type: 'SET_APP_THEME',
+		payload: { theme },
+	};
+}
+
+/**
+ * Temporary action to control auth flow
+ *
+ * @param {string} initialScreen - "login" or "onboarding"
+ * @returns - void
+ */
+export function checkedAuth(initialScreen) {
+	return {
+		type: 'CHECKED_AUTH',
+		payload: {
+			initialScreen,
+		},
+	};
 }

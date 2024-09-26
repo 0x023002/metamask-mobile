@@ -5,9 +5,9 @@ import axios from 'axios';
 import AUTHENTICATION_TYPE from '../../constants/userProperties';
 import DefaultPreference from 'react-native-default-preference';
 import Logger from '../../util/Logger';
-import { ANALYTICS_EVENTS_V2 } from '../../util/analyticsV2';
+import { MetaMetricsEvents } from '../../core/Analytics';
 import { store } from '../../store';
-import { MIXPANEL_ENDPOINT_BASE_URL } from '../../constants/urls';
+import { MIXPANEL_PROXY_ENDPOINT_BASE_URL } from '../../constants/urls';
 import {
   METRICS_OPT_IN,
   AGREED,
@@ -32,6 +32,8 @@ const USER_PROFILE_PROPERTY = {
   OFF: 'OFF',
   AUTHENTICATION_TYPE: 'Authentication Type',
   TOKEN_DETECTION: 'token_detection_enable',
+  MULTI_ACCOUNT_BALANCE: 'Batch account balance requests',
+  SECURITY_PROVIDERS: 'security_providers',
 };
 
 /**
@@ -98,13 +100,13 @@ class Analytics {
 
     RCTAnalytics.setUserProfileProperty(
       USER_PROFILE_PROPERTY.ENABLE_OPENSEA_API,
-      preferencesController?.openSeaEnabled
+      preferencesController?.displayNftMedia
         ? USER_PROFILE_PROPERTY.ON
         : USER_PROFILE_PROPERTY.OFF,
     );
     RCTAnalytics.setUserProfileProperty(
       USER_PROFILE_PROPERTY.NFT_AUTODETECTION,
-      preferencesController?.useCollectibleDetection
+      preferencesController?.useNftDetection
         ? USER_PROFILE_PROPERTY.ON
         : USER_PROFILE_PROPERTY.OFF,
     );
@@ -119,6 +121,23 @@ class Analytics {
         ? USER_PROFILE_PROPERTY.ON
         : USER_PROFILE_PROPERTY.OFF,
     );
+    // Track multi account balance toggle
+    RCTAnalytics.setUserProfileProperty(
+      USER_PROFILE_PROPERTY.MULTI_ACCOUNT_BALANCE,
+      preferencesController.isMultiAccountBalancesEnabled
+        ? USER_PROFILE_PROPERTY.ON
+        : USER_PROFILE_PROPERTY.OFF,
+    );
+
+    // Track security providers toggle
+    const securityProviders = preferencesController?.securityAlertsEnabled
+      ? 'blockaid'
+      : '';
+
+    RCTAnalytics.setUserProfileProperty(
+      USER_PROFILE_PROPERTY.SECURITY_PROVIDERS,
+      securityProviders,
+    );
   };
 
   /**
@@ -129,7 +148,7 @@ class Analytics {
     { event, params = {}, value, info, anonymously = false },
   ) {
     const isAnalyticsPreferenceSelectedEvent =
-      ANALYTICS_EVENTS_V2.ANALYTICS_PREFERENCE_SELECTED === event;
+      MetaMetricsEvents.ANALYTICS_PREFERENCE_SELECTED === event;
     if (!this.enabled && !isAnalyticsPreferenceSelectedEvent) return;
     this._setUserProfileProperties();
     if (!__DEV__) {
@@ -189,15 +208,13 @@ class Analytics {
     const distinctId = await this.getDistinctId();
     const action = 'data-deletions';
     const token = process.env.MM_MIXPANEL_TOKEN;
-    const GDPRToken = process.env.MM_MIXPANEL_GDPR_API_TOKEN;
-    const url = `${MIXPANEL_ENDPOINT_BASE_URL}/${action}/v3.0/?token=${token}`;
+    const url = `${MIXPANEL_PROXY_ENDPOINT_BASE_URL}/${action}/v3.0/?token=${token}`;
     try {
       const response = await axios({
         url,
         method: 'post',
         headers: {
           Accept: 'application/json',
-          Authorization: `Bearer ${GDPRToken}`,
         },
         data: JSON.stringify({
           distinct_ids: [distinctId],
@@ -274,14 +291,12 @@ class Analytics {
 
     const action = 'data-deletions';
     const token = process.env.MM_MIXPANEL_TOKEN;
-    const GDPRToken = process.env.MM_MIXPANEL_GDPR_API_TOKEN;
-    const url = `${MIXPANEL_ENDPOINT_BASE_URL}/${action}/v3.0/${this.dataDeletionTaskId}?token=${token}`;
+    const url = `${MIXPANEL_PROXY_ENDPOINT_BASE_URL}/${action}/v3.0/${this.dataDeletionTaskId}?token=${token}`;
     const response = await axios({
       url,
       method: 'get',
       headers: {
         Accept: 'application/json',
-        Authorization: `Bearer ${GDPRToken}`,
       },
     });
 

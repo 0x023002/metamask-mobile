@@ -1,12 +1,14 @@
 /* eslint-disable import/no-commonjs, import/prefer-default-export, @typescript-eslint/no-require-imports */
 import { strings } from '../../../../locales/i18n';
+import Routes from '../../../constants/navigation/Routes';
+import { isBlockaidFeatureEnabled } from '../../../util/blockaid';
 import { WhatsNew } from './types';
 
 export const whatsNew: WhatsNew = {
-  // All users that have <5.4.0 and are updating to >=5.4.0 should see
-  onlyUpdates: true, // Only users who updated the app will see this, not newly installs
-  maxLastAppVersion: '5.4.0', // Only users who had a previous version <5.4.0 version will see this
-  minAppVersion: '5.4.0', // Only users who updated to a version >= 5.4.0 will see this
+  // All users that have <6.4.0 and are updating to >=6.4.0 should see
+  onlyUpdates: false, // false: Users who updated the app and new installs will see this. true: only users who update will see it
+  maxLastAppVersion: '7.12.0', // Only users who had a previous version <7.12.0 version will see this
+  minAppVersion: '7.12.0', // Only users who updated to a version >= 7.3.0 will see this
   /**
    * Slides utilizes a templating system in the form of a 2D array, which is eventually rendered within app/components/UI/WhatsNewModal/index.js.
    * The root layer determines the number of slides. Ex. To display 3 slides, the root layer should contain 3 arrays.
@@ -18,60 +20,54 @@ export const whatsNew: WhatsNew = {
     [
       {
         type: 'image',
-        image: require('../../../images/whats-new-token-detection.png'),
-      }, // eslint-disable-line
+        image: require('../../../images/whats_new_sell.png'),
+      },
       {
         type: 'title',
-        title: strings('whats_new.feature_token_detection_title'),
+        title: strings('whats_new.sell.title'),
       },
       {
         type: 'description',
-        description: strings('whats_new.feature_token_detection_description'),
+        description: strings('whats_new.sell.description'),
       },
+      // button to try it out
       {
         type: 'button',
-        buttonType: 'normal',
-        buttonText: strings('whats_new.feature_token_detection_button_text'),
-        onPress: (props: any) =>
-          props.navigation.navigate('SettingsView', {
-            screen: 'SettingsFlow',
-            params: {
-              screen: 'AdvancedSettings',
-              params: {
-                scrollToBottom: true,
-                isFullScreenModal: true,
-              },
-            },
-          }),
-      },
-    ],
-    [
-      {
-        type: 'title',
-        title: strings('whats_new.feature_token_security_title_1'),
-      },
-      {
-        type: 'description',
-        description: strings('whats_new.feature_token_security_description_1'),
-      },
-      {
-        type: 'title',
-        title: strings('whats_new.feature_token_security_title_2'),
-      },
-      {
-        type: 'description',
-        description: strings('whats_new.feature_token_security_description_2'),
-      },
-      {
-        type: 'image',
-        image: require('../../../images/whats-new-token-security.png'),
-      }, // eslint-disable-line
-      {
-        type: 'button',
+        buttonText: strings('whats_new.sell.action_text'),
         buttonType: 'blue',
-        buttonText: strings('whats_new.feature_token_security_button_text'),
-        onPress: () => null,
+        onPress: (props) => props.navigation.navigate(Routes.RAMP.SELL),
       },
     ],
+    ...(isBlockaidFeatureEnabled()
+      ? ([
+          [
+            {
+              type: 'title',
+              title: strings('whats_new.blockaid.title'),
+            },
+            {
+              type: 'image',
+              image: require('../../../images/whats_new_blockaid.png'),
+            },
+            {
+              type: 'description',
+              description: strings('whats_new.blockaid.description_1'),
+            },
+            {
+              type: 'description',
+              description: strings('whats_new.blockaid.description_2'),
+            },
+            {
+              type: 'button',
+              buttonText: strings('whats_new.blockaid.action_text'),
+              buttonType: 'blue',
+              onPress: (props) =>
+                props.navigation.navigate(Routes.SETTINGS_VIEW, {
+                  screen: Routes.SETTINGS.EXPERIMENTAL_SETTINGS,
+                }),
+            },
+          ],
+        ] as WhatsNew['slides'])
+      : []),
   ],
 };

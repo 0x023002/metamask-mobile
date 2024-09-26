@@ -20,6 +20,29 @@ const initialState = {
   networkOnboarded: {
     networkOnboardedState: [{ network: 'mainnet', onboarded: true }],
   },
+<<<<<<< HEAD
+	privacy: {
+		approvedHosts: {},
+	},
+	engine: {
+		backgroundState: {
+			NetworkController: {
+				provider: { type: 'mainnet', rpcTarget: 'http://10.0.2.2:8545' },
+			},
+			PreferencesController: { frequentRpcList: ['http://10.0.2.2:8545'] },
+		},
+	},
+	networkOnboarded: {
+		networkOnboardedState: [{ network: 'mainnet', onboarded: true }],
+	},
+=======
+  modals: {
+    shouldNetworkSwitchPopToWallet: false,
+  },
+  navigation: {
+    currentBottomNavRoute: 'Wallet',
+  },
+>>>>>>> upstream/testflight/4754-permission-system
 };
 const store = mockStore(initialState);
 

@@ -10,6 +10,7 @@ interface Props {
    */
   warningMessage: ReactNode;
   style?: StyleProp<ViewStyle>;
+  onDismiss?: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -19,13 +20,14 @@ const styles = StyleSheet.create({
   },
 });
 
-const WarningMessage = ({ warningMessage, style }: Props) => {
+const WarningMessage = ({ warningMessage, style, onDismiss }: Props) => {
   const { colors } = useTheme();
 
   return (
     <Alert
       type={AlertType.Warning}
       style={style}
+      onDismiss={onDismiss}
       renderIcon={() => (
         <FontAwesome
           style={styles.icon}
@@ -40,4 +42,37 @@ const WarningMessage = ({ warningMessage, style }: Props) => {
   );
 };
 
+<<<<<<< Updated upstream
+	/**
+	 * Warning message to display (Plain text or JSX)
+	 */
+	warningMessage: ReactNode;
+	style?: StyleProp<ViewStyle>;
+}
+
+const styles = StyleSheet.create({
+	icon: {
+		paddingTop: 4,
+		paddingRight: 8,
+	},
+});
+
+const WarningMessage = ({ warningMessage, style }: Props) => {
+	const { colors } = useAppThemeFromContext() || mockTheme;
+
+	return (
+		<Alert
+			type={AlertType.Warning}
+			style={style}
+			renderIcon={() => (
+				<FontAwesome style={styles.icon} name={'exclamation-circle'} color={colors.warning.default} size={18} />
+			)}
+		>
+			{warningMessage}
+		</Alert>
+	);
+};
+
+=======
+>>>>>>> Stashed changes
 export default WarningMessage;

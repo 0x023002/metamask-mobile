@@ -1,5 +1,7 @@
 # Toast
 
+![Toast](./Toast.png)
+
 Toast is a component that slides up from the bottom. It is typically used to show post confirmation information.
 
 ## Methods
@@ -69,6 +71,7 @@ const showToast = () => {
       { label: LABEL_CHUNK_2, isBold: true },
     ],
     accountAddress: ACCOUNT_ADDRESS,
+    accountAvatarType: ACCOUNT_AVATAR_TYPE,
     linkButtonOptions: {
       label: LINK_LABEL,
       onPress: ONPRESS_HANDLER,

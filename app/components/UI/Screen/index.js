@@ -13,6 +13,7 @@ export default class Screen extends PureComponent {
      */
     children: PropTypes.node,
   };
+<<<<<<< Updated upstream
 
   render() {
     return (
@@ -23,4 +24,30 @@ export default class Screen extends PureComponent {
       </View>
     );
   }
+	static propTypes = {
+		/**
+		 * Content to wrap inside this view
+		 */
+		children: PropTypes.node,
+	};
+
+	render() {
+		return (
+			<View style={baseStyles.flexGrow}>
+				<SafeAreaView style={baseStyles.flexGrow}>{this.props.children}</SafeAreaView>
+			</View>
+		);
+	}
+=======
+
+  render() {
+    return (
+      <View style={baseStyles.flexGrow}>
+        <SafeAreaView style={baseStyles.flexGrow}>
+          {this.props.children}
+        </SafeAreaView>
+      </View>
+    );
+  }
+>>>>>>> Stashed changes
 }

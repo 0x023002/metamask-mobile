@@ -5,7 +5,10 @@ import { fontStyles } from '../../../../styles/common';
 import { strings } from '../../../../../locales/i18n';
 import WarningMessage from '../../../Views/SendFlow/WarningMessage';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
+<<<<<<< Updated upstream
+=======
 import { isTestNet } from '../../../../util/networks';
+>>>>>>> Stashed changes
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -37,6 +40,8 @@ const createStyles = (colors) =>
       textTransform: 'uppercase',
       textAlign: 'center',
     },
+<<<<<<< Updated upstream
+=======
     testNestSummaryPrimary: {
       ...fontStyles.normal,
       color: colors.text.default,
@@ -45,6 +50,7 @@ const createStyles = (colors) =>
       paddingBottom: 4,
       textAlign: 'center',
     },
+>>>>>>> Stashed changes
     summarySecondary: {
       ...fontStyles.normal,
       color: colors.text.alternative,
@@ -58,6 +64,51 @@ const createStyles = (colors) =>
       paddingTop: 12,
     },
   });
+<<<<<<< Updated upstream
+	StyleSheet.create({
+		confirmBadge: {
+			...fontStyles.normal,
+			alignItems: 'center',
+			borderColor: colors.border.default,
+			borderRadius: 12,
+			borderWidth: 1,
+			color: colors.text.default,
+			fontSize: 10,
+			paddingVertical: 4,
+			paddingHorizontal: 8,
+			textAlign: 'center',
+		},
+		summary: {
+			backgroundColor: colors.background.default,
+			padding: 24,
+			paddingTop: 12,
+			paddingBottom: 16,
+			alignItems: 'center',
+		},
+		summaryPrimary: {
+			...fontStyles.normal,
+			color: colors.text.default,
+			fontSize: 44,
+			paddingTop: 16,
+			paddingBottom: 4,
+			textTransform: 'uppercase',
+			textAlign: 'center',
+		},
+		summarySecondary: {
+			...fontStyles.normal,
+			color: colors.text.alternative,
+			fontSize: 24,
+			textTransform: 'uppercase',
+			textAlign: 'center',
+		},
+		warning: {
+			width: '100%',
+			paddingHorizontal: 24,
+			paddingTop: 12,
+		},
+	});
+=======
+>>>>>>> Stashed changes
 
 /**
  * PureComponent that supports reviewing transaction summary
@@ -88,10 +139,13 @@ class TransactionReviewSummary extends PureComponent {
      * ETH or fiat, depending on user setting
      */
     primaryCurrency: PropTypes.string,
+<<<<<<< Updated upstream
+=======
     /**
      * Network provider chain id
      */
     chainId: PropTypes.string,
+>>>>>>> Stashed changes
   };
 
   renderWarning = () => (
@@ -108,11 +162,33 @@ class TransactionReviewSummary extends PureComponent {
       fiatValue,
       approveTransaction,
       primaryCurrency,
+<<<<<<< Updated upstream
+    } = this.props;
+    const colors = this.context.colors || mockTheme.colors;
+    const styles = createStyles(colors);
+	render = () => {
+		const { actionKey, assetAmount, conversionRate, fiatValue, approveTransaction, primaryCurrency } = this.props;
+		const colors = this.context.colors || mockTheme.colors;
+		const styles = createStyles(colors);
+
+		return (
+			<View>
+				{!!approveTransaction && (
+					<View style={styles.warning}>
+						<WarningMessage warningMessage={this.renderWarning()} />
+					</View>
+				)}
+				<View style={styles.summary}>
+					<Text style={styles.confirmBadge} numberOfLines={1}>
+						{actionKey}
+					</Text>
+=======
       chainId,
     } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const isTestNetResult = isTestNet(chainId);
+>>>>>>> Stashed changes
 
     return (
       <View>
@@ -127,6 +203,12 @@ class TransactionReviewSummary extends PureComponent {
           </Text>
 
           {!conversionRate ? (
+<<<<<<< Updated upstream
+            <Text style={styles.summaryPrimary}>{assetAmount}</Text>
+          ) : (
+            <View>
+              <Text style={styles.summaryPrimary}>
+=======
             <Text
               style={
                 isTestNetResult
@@ -145,6 +227,7 @@ class TransactionReviewSummary extends PureComponent {
                     : styles.summaryPrimary
                 }
               >
+>>>>>>> Stashed changes
                 {primaryCurrency === 'ETH' ? assetAmount : fiatValue}
               </Text>
               <Text style={styles.summarySecondary}>

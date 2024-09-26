@@ -6,7 +6,7 @@ import { Provider } from 'react-redux';
 
 const mockStore = configureMockStore();
 const initialState = {
-  privacy: { approvedHosts: {}, privacyMode: true },
+  privacy: { approvedHosts: {} },
   browser: { history: [] },
   settings: { lockTime: 1000 },
   user: { passwordSet: true },
@@ -27,9 +27,22 @@ const initialState = {
       },
     },
   },
-  security: {
-    allowLoginWithRememberMe: true,
-  },
+	privacy: { approvedHosts: {}, privacyMode: true },
+	browser: { history: [] },
+	settings: { lockTime: 1000 },
+	user: { passwordSet: true },
+	engine: {
+		backgroundState: {
+			PreferencesController: { selectedAddress: '0x', identities: { '0x': { name: 'Account 1' } } },
+			AccountTrackerController: { accounts: {} },
+			KeyringController: { keyrings: [{ accounts: ['0x'], type: 'HD Key Tree' }] },
+			NetworkController: {
+				provider: {
+					type: 'mainnet',
+				},
+			},
+		},
+	},
 };
 const store = mockStore(initialState);
 

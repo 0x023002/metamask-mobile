@@ -10,7 +10,7 @@ import Engine from './Engine';
 import { generateApproveData } from '../util/transactions';
 import { NETWORK_ERROR_MISSING_NETWORK_ID } from '../constants/error';
 import { strings } from '../../locales/i18n';
-import { getNetworkTypeById, handleNetworkSwitch } from '../util/networks';
+import { getNetworkTypeById } from '../util/networks';
 import { WalletDevice } from '@metamask/controllers/';
 import {
   ACTIONS,
@@ -43,21 +43,52 @@ class DeeplinkManager {
    */
   _handleNetworkSwitch = (switchToChainId) => {
     const { NetworkController, CurrencyRateController } = Engine.context;
-    const network = handleNetworkSwitch(switchToChainId, this.frequentRpcList, {
-      networkController: NetworkController,
-      currencyRateController: CurrencyRateController,
-    });
 
-    if (!network) return;
+    // If not specified, use the current network
+    if (!switchToChainId) {
+      return;
+    }
 
-    this.dispatch(
-      showAlert({
-        isVisible: true,
-        autodismiss: 5000,
-        content: 'clipboard-alert',
-        data: { msg: strings('send.warn_network_change') + network },
-      }),
+    // If current network is the same as the one we want to switch to, do nothing
+    if (
+      NetworkController?.state?.provider?.chainId === String(switchToChainId)
+    ) {
+      return;
+    }
+
+    const rpc = this.frequentRpcList.find(
+      ({ chainId }) => chainId === switchToChainId,
     );
+
+    if (rpc) {
+      const { rpcUrl, chainId, ticker, nickname } = rpc;
+      CurrencyRateController.setNativeCurrency(ticker);
+      NetworkController.setRpcTarget(rpcUrl, chainId, ticker, nickname);
+      this.dispatch(
+        showAlert({
+          isVisible: true,
+          autodismiss: 5000,
+          content: 'clipboard-alert',
+          data: { msg: strings('send.warn_network_change') + nickname },
+        }),
+      );
+      return;
+    }
+
+    const networkType = getNetworkTypeById(switchToChainId);
+
+    if (networkType) {
+      CurrencyRateController.setNativeCurrency('ETH');
+      NetworkController.setProviderType(networkType);
+      this.dispatch(
+        showAlert({
+          isVisible: true,
+          autodismiss: 5000,
+          content: 'clipboard-alert',
+          data: { msg: strings('send.warn_network_change') + networkType },
+        }),
+      );
+    }
   };
 
   _approveTransaction = (ethUrl, origin) => {
@@ -160,8 +191,8 @@ class DeeplinkManager {
       if (callback) {
         callback(url);
       } else {
-        this.navigation.navigate(Routes.BROWSER_TAB_HOME, {
-          screen: Routes.BROWSER_VIEW,
+        this.navigation.navigate(Routes.BROWSER.HOME, {
+          screen: Routes.BROWSER.VIEW,
           params: {
             newTabUrl: url,
             timestamp: Date.now(),

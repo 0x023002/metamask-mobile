@@ -3,28 +3,32 @@ import CollectibleContractOverview from './';
 import configureMockStore from 'redux-mock-store';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
+import initialBackgroundState from '../../../util/test/initial-background-state.json';
 
 const mockStore = configureMockStore();
 const initialState = {
   engine: {
-    backgroundState: {
-      NetworkController: {
-        provider: {
-          chainId: 1,
-        },
-      },
-      PreferencesController: {
-        selectedAddress: '0x1',
-      },
-      CollectiblesController: {
-        allCollectibles: {
-          '0x1': {
-            1: [],
-          },
-        },
-      },
-    },
+    backgroundState: initialBackgroundState,
   },
+	engine: {
+		backgroundState: {
+			NetworkController: {
+				provider: {
+					chainId: 1,
+				},
+			},
+			PreferencesController: {
+				selectedAddress: '0x1',
+			},
+			CollectiblesController: {
+				allCollectibles: {
+					'0x1': {
+						1: [],
+					},
+				},
+			},
+		},
+	},
 };
 const store = mockStore(initialState);
 
@@ -43,6 +47,6 @@ describe('CollectibleContractOverview', () => {
         />
       </Provider>,
     );
-    expect(wrapper.dive()).toMatchSnapshot();
+    expect(wrapper).toMatchSnapshot();
   });
 });

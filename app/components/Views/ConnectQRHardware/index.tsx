@@ -16,13 +16,17 @@ import { strings } from '../../../../locales/i18n';
 import { IAccount } from './types';
 import { UR } from '@ngraveio/bc-ur';
 import Alert, { AlertType } from '../../Base/Alert';
+import { MetaMetricsEvents } from '../../../core/Analytics';
 import AnalyticsV2 from '../../../util/analyticsV2';
+
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Device from '../../../util/device';
 import { useTheme } from '../../../util/theme';
 import { SUPPORTED_UR_TYPE } from '../../../constants/qr';
 import { fontStyles } from '../../../styles/common';
 import Logger from '../../../util/Logger';
+import { removeAccountsFromPermissions } from '../../../core/Permissions';
+import { safeToChecksumAddress } from '../../../util/address';
 
 interface IConnectQRHardwareProps {
   navigation: any;
@@ -162,12 +166,9 @@ const ConnectQRHardware = ({ navigation }: IConnectQRHardwareProps) => {
   }, [QRState.sync, hideScanner, showScanner]);
 
   const onConnectHardware = useCallback(async () => {
-    AnalyticsV2.trackEvent(
-      AnalyticsV2.ANALYTICS_EVENTS.CONTINUE_QR_HARDWARE_WALLET,
-      {
-        device_type: 'QR Hardware',
-      },
-    );
+    AnalyticsV2.trackEvent(MetaMetricsEvents.CONTINUE_QR_HARDWARE_WALLET, {
+      device_type: 'QR Hardware',
+    });
     resetError();
     const _accounts = await KeyringController.connectQRHardware(0);
     setAccounts(_accounts);
@@ -177,7 +178,7 @@ const ConnectQRHardware = ({ navigation }: IConnectQRHardwareProps) => {
     (ur: UR) => {
       hideScanner();
       AnalyticsV2.trackEvent(
-        AnalyticsV2.ANALYTICS_EVENTS.CONNECT_HARDWARE_WALLET_SUCCESS,
+        MetaMetricsEvents.CONNECT_HARDWARE_WALLET_SUCCESS,
         {
           device_type: 'QR Hardware',
         },
@@ -251,23 +252,42 @@ const ConnectQRHardware = ({ navigation }: IConnectQRHardwareProps) => {
   );
 
   const onUnlock = useCallback(async () => {
+    const { PreferencesController } = Engine.context as any;
     resetError();
     setBlockingModalVisible(true);
+    const importedAccountAddresses = [];
     try {
       for (const account of checkedAccounts) {
-        await KeyringController.unlockQRHardwareWalletAccount(account);
+        const accountAddress =
+          await KeyringController.unlockQRHardwareWalletAccount(account);
+        importedAccountAddresses.push(accountAddress);
       }
+      PreferencesController.setSelectedAddress(importedAccountAddresses[0]);
     } catch (err) {
       Logger.log('Error: Connecting QR hardware wallet', err);
     }
     setBlockingModalVisible(false);
-    navigation.goBack();
+    navigation.pop(2);
   }, [KeyringController, checkedAccounts, navigation, resetError]);
 
   const onForget = useCallback(async () => {
+    const { PreferencesController } = Engine.context as any;
     resetError();
-    await KeyringController.forgetQRDevice();
+    // removedAccounts and remainingAccounts are not checksummed here.
+    const { removedAccounts, remainingAccounts } =
+      await KeyringController.forgetQRDevice();
+    PreferencesController.setSelectedAddress(
+      remainingAccounts[remainingAccounts.length - 1],
+    );
+    const checksummedRemovedAccounts = removedAccounts.map(
+      safeToChecksumAddress,
+    );
+    removeAccountsFromPermissions(checksummedRemovedAccounts);
+<<<<<<< HEAD
+    navigation.pop(2);
+=======
     navigation.goBack();
+>>>>>>> upstream/testflight/4754-permission-system
   }, [KeyringController, navigation, resetError]);
 
   const renderAlert = () =>

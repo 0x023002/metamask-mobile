@@ -25,6 +25,7 @@ export default class SimpleWebview extends PureComponent {
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(getWebviewNavbar(navigation, route, colors));
   };
+<<<<<<< Updated upstream
 
   componentDidMount = () => {
     const { navigation } = this.props;
@@ -35,6 +36,56 @@ export default class SimpleWebview extends PureComponent {
   componentDidUpdate = () => {
     this.updateNavBar();
   };
+	static propTypes = {
+		/**
+		 * react-navigation object used to switch between screens
+		 */
+		navigation: PropTypes.object,
+		/**
+		 * Object that represents the current route info like params passed to it
+		 */
+		route: PropTypes.object,
+	};
+
+	updateNavBar = () => {
+		const { navigation, route } = this.props;
+		const colors = this.context.colors || mockTheme.colors;
+		navigation.setOptions(getWebviewNavbar(navigation, route, colors));
+	};
+
+	componentDidMount = () => {
+		const { navigation } = this.props;
+		this.updateNavBar();
+		navigation && navigation.setParams({ dispatch: this.share });
+	};
+
+	componentDidUpdate = () => {
+		this.updateNavBar();
+	};
+
+	share = () => {
+		const { route } = this.props;
+		const url = route.params?.url;
+		if (url) {
+			Share.open({
+				url,
+			}).catch((err) => {
+				Logger.log('Error while trying to share simple web view', err);
+			});
+		}
+	};
+=======
+
+  componentDidMount = () => {
+    const { navigation } = this.props;
+    this.updateNavBar();
+    navigation && navigation.setParams({ dispatch: this.share });
+  };
+
+  componentDidUpdate = () => {
+    this.updateNavBar();
+  };
+>>>>>>> Stashed changes
 
   share = () => {
     const { route } = this.props;
@@ -59,5 +110,7 @@ export default class SimpleWebview extends PureComponent {
     }
   }
 }
+
+export { default as createWebviewNavDetails } from './SimpleWebview.types';
 
 SimpleWebview.contextType = ThemeContext;

@@ -1,15 +1,29 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+<<<<<<< Updated upstream
+import { StyleSheet, View, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { colors } from '../../../styles/common';
+=======
 import {
   StyleSheet,
   View,
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
+>>>>>>> Stashed changes
 import { strings } from '../../../../locales/i18n';
 import { TRANSACTION_TYPES } from '../../../util/transactions';
 import Summary from '../../Base/Summary';
 import Text from '../../Base/Text';
+<<<<<<< Updated upstream
+
+const styles = StyleSheet.create({
+	loader: {
+		backgroundColor: colors.white,
+		height: 10
+	}
+});
+=======
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
 
@@ -20,6 +34,7 @@ const createStyles = (colors) =>
       height: 10,
     },
   });
+>>>>>>> Stashed changes
 
 export default class TransactionSummary extends PureComponent {
   static propTypes = {
@@ -38,6 +53,92 @@ export default class TransactionSummary extends PureComponent {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
+<<<<<<< Updated upstream
+	render = () => {
+		const { amount, fee, totalAmount, secondaryTotalAmount, gasEstimationReady, onEditPress } = this.props;
+		if (
+			this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
+			this.props.transactionType === TRANSACTION_TYPES.RECEIVED
+		) {
+			return (
+				<Summary>
+					<Summary.Row>
+						<Text small bold primary>
+							{strings('transaction.amount')}
+						</Text>
+						<Text small bold primary upper>
+							{amount}
+						</Text>
+					</Summary.Row>
+					{secondaryTotalAmount && (
+						<Summary.Row end last>
+							<Text small right upper>
+								{secondaryTotalAmount}
+							</Text>
+						</Summary.Row>
+					)}
+				</Summary>
+			);
+		}
+		return (
+			<Summary>
+				<Summary.Row>
+					<Text small primary>
+						{strings('transaction.amount')}
+					</Text>
+					<Text small primary upper>
+						{amount}
+					</Text>
+				</Summary.Row>
+				<Summary.Row>
+					<Summary.Col>
+						<Text small primary italic>
+							{!fee
+								? strings('transaction.transaction_fee_less')
+								: strings('transaction.transaction_fee_estimated')}
+						</Text>
+						{!fee || !onEditPress ? null : (
+							<TouchableOpacity
+								disabled={!gasEstimationReady}
+								onPress={onEditPress}
+								key="transactionFeeEdit"
+							>
+								<Text small link>
+									{'  '}
+									{strings('transaction.edit')}
+								</Text>
+							</TouchableOpacity>
+						)}
+					</Summary.Col>
+					{!!fee &&
+						this.renderIfGastEstimationReady(
+							<Text small primary upper>
+								{fee}
+							</Text>
+						)}
+				</Summary.Row>
+				<Summary.Separator />
+				<Summary.Row>
+					<Text small bold primary>
+						{strings('transaction.total_amount')}
+					</Text>
+					{this.renderIfGastEstimationReady(
+						<Text small bold primary upper>
+							{totalAmount}
+						</Text>
+					)}
+				</Summary.Row>
+				<Summary.Row end last>
+					{this.renderIfGastEstimationReady(
+						<Text small right upper>
+							{secondaryTotalAmount}
+						</Text>
+					)}
+				</Summary.Row>
+			</Summary>
+		);
+	};
+=======
     return !gasEstimationReady ? (
       <View style={styles.loader}>
         <ActivityIndicator size="small" />
@@ -117,6 +218,7 @@ export default class TransactionSummary extends PureComponent {
                 disabled={!gasEstimationReady}
                 onPress={onEditPress}
                 key="transactionFeeEdit"
+                testID=""
               >
                 <Text small link>
                   {'  '}
@@ -153,6 +255,7 @@ export default class TransactionSummary extends PureComponent {
       </Summary>
     );
   };
+>>>>>>> Stashed changes
 }
 
 TransactionSummary.contextType = ThemeContext;

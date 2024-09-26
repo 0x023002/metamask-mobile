@@ -3,8 +3,7 @@ import { renderFromWei, weiToFiat, toWei, conversionUtil } from '../number';
 import { strings } from '../../../locales/i18n';
 import TransactionTypes from '../../core/TransactionTypes';
 import Engine from '../../core/Engine';
-import { util } from '@metamask/controllers';
-const { hexToBN } = util;
+import { hexToBN } from '@metamask/controller-utils';
 
 export const ETH = 'ETH';
 export const GWEI = 'GWEI';
@@ -108,12 +107,16 @@ export function parseWaitTime(min) {
   return parsed.trim();
 }
 
-export async function getGasLimit(transaction) {
+export async function getGasLimit(transaction, resetGas = false) {
   const { TransactionController } = Engine.context;
 
   let estimation;
   try {
-    estimation = await TransactionController.estimateGas(transaction);
+    const newTransactionObj = resetGas
+      ? { ...transaction, gas: undefined }
+      : transaction;
+
+    estimation = await TransactionController.estimateGas(newTransactionObj);
   } catch (error) {
     estimation = {
       gas: TransactionTypes.CUSTOM_GAS.DEFAULT_GAS_LIMIT,
@@ -122,6 +125,50 @@ export async function getGasLimit(transaction) {
 
   const gas = hexToBN(estimation.gas);
   return { gas };
+<<<<<<< Updated upstream
+	let tempMin = min,
+		parsed = '',
+		val;
+	const timeUnits = [
+		[strings('unit.week'), 10080],
+		[strings('unit.day'), 1440],
+		[strings('unit.hour'), 60],
+		[strings('unit.minute'), 1],
+	];
+	timeUnits.forEach((unit) => {
+		if (parsed.includes(' ')) return;
+		val = Math.floor(tempMin / unit[1]);
+		if (val) {
+			if (parsed !== '') parsed += ' ';
+			parsed += `${val}${unit[0]}`;
+		}
+		tempMin = min % unit[1];
+	});
+	if (parsed === '') {
+		val = (Math.round(tempMin * 100) * 3) / 5;
+		if (val) {
+			parsed += ` ${Math.ceil(val)}${strings('unit.second')}`;
+		}
+	}
+	return parsed.trim();
+}
+
+export async function getGasLimit(transaction) {
+	const { TransactionController } = Engine.context;
+
+	let estimation;
+	try {
+		estimation = await TransactionController.estimateGas(transaction);
+	} catch (error) {
+		estimation = {
+			gas: TransactionTypes.CUSTOM_GAS.DEFAULT_GAS_LIMIT,
+		};
+	}
+
+	const gas = hexToBN(estimation.gas);
+	return { gas };
+=======
+>>>>>>> Stashed changes
 }
 
 export function getValueFromWeiHex({

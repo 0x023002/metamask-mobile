@@ -1,9 +1,11 @@
 import React, { PureComponent } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, Platform } from 'react-native';
 import PropTypes from 'prop-types';
 import { fontStyles } from '../../../../styles/common';
 import { connect } from 'react-redux';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
+import generateTestId from '../../../../../wdio/utils/generateTestId';
+import { TABS_NUMBER } from '../../../../../wdio/screen-objects/testIDs/BrowserScreen/BrowserScreen.testIds';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -23,6 +25,26 @@ const createStyles = (colors) =>
       ...fontStyles.normal,
     },
   });
+<<<<<<< Updated upstream
+	StyleSheet.create({
+		tabIcon: {
+			borderWidth: 2,
+			borderColor: colors.text.alternative,
+			borderRadius: 6,
+			alignItems: 'center',
+			justifyContent: 'center',
+		},
+		tabCount: {
+			color: colors.text.alternative,
+			flex: 0,
+			fontSize: 15,
+			textAlign: 'center',
+			alignSelf: 'center',
+			...fontStyles.normal,
+		},
+	});
+=======
+>>>>>>> Stashed changes
 
 /**
  * PureComponent that renders an icon showing
@@ -44,13 +66,44 @@ class TabCountIcon extends PureComponent {
     const { tabCount, style } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
+<<<<<<< Updated upstream
 
     return (
       <View style={[styles.tabIcon, style]}>
-        <Text style={styles.tabCount}>{tabCount}</Text>
+        <Text
+          style={styles.tabCount}
+          {...generateTestId(Platform, TABS_NUMBER)}
+        >
+          {tabCount}
+        </Text>
       </View>
     );
   }
+	render() {
+		const { tabCount, style } = this.props;
+		const colors = this.context.colors || mockTheme.colors;
+		const styles = createStyles(colors);
+
+		return (
+			<View style={[styles.tabIcon, style]}>
+				<Text style={styles.tabCount}>{tabCount}</Text>
+			</View>
+		);
+	}
+=======
+
+    return (
+      <View style={[styles.tabIcon, style]}>
+        <Text
+          style={styles.tabCount}
+          {...generateTestId(Platform, TABS_NUMBER)}
+        >
+          {tabCount}
+        </Text>
+      </View>
+    );
+  }
+>>>>>>> Stashed changes
 }
 
 const mapStateToProps = (state) => ({

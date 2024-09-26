@@ -1,24 +1,25 @@
 import TestHelpers from '../../helpers';
 import {
-  NEW_NETWORK_ADDED_CLOSE_BUTTON_ID,
-  NEW_NETWORK_ADDED_SWITCH_TO_NETWORK_BUTTON_ID,
-} from '../../../app/constants/test-ids';
-import { strings } from '../../../locales/i18n';
-
-const switchToNetworkText = strings('networks.new_network');
+  NetworkAddedModalSelectorsIDs,
+  NetworkAddedModalSelectorsText,
+} from '../../selectors/Modals/NetworkAddedModal.selectors';
 
 export default class NetworkAddedModal {
   static async tapSwitchToNetwork() {
-    await TestHelpers.tap(NEW_NETWORK_ADDED_SWITCH_TO_NETWORK_BUTTON_ID);
+    await TestHelpers.tap(NetworkAddedModalSelectorsIDs.SWITCH_NETWORK_BUTTON);
   }
   static async tapCloseButton() {
-    await TestHelpers.tap(NEW_NETWORK_ADDED_CLOSE_BUTTON_ID);
+    await TestHelpers.tap(NetworkAddedModalSelectorsIDs.CLOSE_NETWORK_BUTTON);
   }
 
   static async isVisible() {
-    await TestHelpers.checkIfElementWithTextIsVisible(switchToNetworkText);
+    await TestHelpers.checkIfElementWithTextIsVisible(
+      NetworkAddedModalSelectorsText.SWITCH_NETWORK,
+    );
   }
   static async isNotVisible() {
-    await TestHelpers.checkIfElementWithTextIsVisible(switchToNetworkText);
+    await TestHelpers.checkIfElementWithTextIsVisible(
+      NetworkAddedModalSelectorsText.SWITCH_NETWORK,
+    );
   }
 }

@@ -41,9 +41,25 @@ import useBlockExplorer from '../utils/useBlockExplorer';
 import useFetchTokenMetadata from '../utils/useFetchTokenMetadata';
 import useModalHandler from '../../../Base/hooks/useModalHandler';
 import TokenImportModal from './TokenImportModal';
+
+import {
+  selectChainId,
+  selectNetworkConfigurations,
+  selectProviderConfig,
+} from '../../../../selectors/networkController';
+import {
+  selectConversionRate,
+  selectCurrentCurrency,
+} from '../../../../selectors/currencyRateController';
+import { selectContractExchangeRates } from '../../../../selectors/tokenRatesController';
+import { selectAccounts } from '../../../../selectors/accountTrackerController';
+import { selectContractBalances } from '../../../../selectors/tokenBalancesController';
+import { selectSelectedAddress } from '../../../../selectors/preferencesController';
+
 import Analytics from '../../../../core/Analytics/Analytics';
-import { ANALYTICS_EVENT_OPTS } from '../../../../util/analytics';
+import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { useTheme } from '../../../../util/theme';
+import { SWAP_SEARCH_TOKEN } from '../../../../../wdio/screen-objects/testIDs/Screens/QuoteView.js';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -119,6 +135,82 @@ const createStyles = (colors) =>
       paddingRight: 8,
     },
   });
+<<<<<<< Updated upstream
+	StyleSheet.create({
+		modal: {
+			margin: 0,
+			justifyContent: 'flex-end',
+		},
+		modalView: {
+			backgroundColor: colors.background.default,
+			borderTopLeftRadius: 10,
+			borderTopRightRadius: 10,
+		},
+		inputWrapper: {
+			flexDirection: 'row',
+			alignItems: 'center',
+			marginHorizontal: 30,
+			marginVertical: 10,
+			paddingVertical: Device.isAndroid() ? 0 : 10,
+			paddingHorizontal: 5,
+			borderRadius: 5,
+			borderWidth: 1,
+			borderColor: colors.border.default,
+		},
+		searchIcon: {
+			marginHorizontal: 8,
+			color: colors.icon.default,
+		},
+		input: {
+			...fontStyles.normal,
+			flex: 1,
+			color: colors.text.default,
+		},
+		modalTitle: {
+			marginTop: Device.isIphone5() ? 10 : 15,
+			marginBottom: Device.isIphone5() ? 5 : 5,
+		},
+		resultsView: {
+			height: Device.isSmallDevice() ? 200 : 280,
+			marginTop: 10,
+		},
+		resultRow: {
+			borderTopWidth: StyleSheet.hairlineWidth,
+			borderColor: colors.border.muted,
+		},
+		emptyList: {
+			marginVertical: 10,
+			marginHorizontal: 30,
+		},
+		importButton: {
+			paddingVertical: 6,
+			paddingHorizontal: 10,
+			backgroundColor: colors.primary.default,
+			borderRadius: 100,
+		},
+		importButtonText: {
+			color: colors.primary.inverse,
+		},
+		loadingIndicator: {
+			margin: 10,
+		},
+		loadingTokenView: {
+			marginVertical: 10,
+			marginHorizontal: 30,
+			justifyContent: 'center',
+			alignItems: 'center',
+			flexDirection: 'row',
+		},
+		footer: {
+			padding: 30,
+		},
+		footerIcon: {
+			paddingTop: 4,
+			paddingRight: 8,
+		},
+	});
+=======
+>>>>>>> Stashed changes
 
 const MAX_TOKENS_RESULTS = 20;
 
@@ -136,19 +228,30 @@ function TokenSelectModal({
   conversionRate,
   tokenExchangeRates,
   chainId,
-  provider,
-  frequentRpcList,
+  providerConfig,
+  networkConfigurations,
   balances,
 }) {
   const navigation = useNavigation();
   const searchInput = useRef(null);
   const list = useRef();
   const [searchString, setSearchString] = useState('');
-  const explorer = useBlockExplorer(provider, frequentRpcList);
+  const explorer = useBlockExplorer(providerConfig, networkConfigurations);
   const [isTokenImportVisible, , showTokenImportModal, hideTokenImportModal] =
     useModalHandler(false);
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
+<<<<<<< Updated upstream
+	const navigation = useNavigation();
+	const searchInput = useRef(null);
+	const list = useRef();
+	const [searchString, setSearchString] = useState('');
+	const explorer = useBlockExplorer(provider, frequentRpcList);
+	const [isTokenImportVisible, , showTokenImportModal, hideTokenImportModal] = useModalHandler(false);
+	const { colors, themeAppearance } = useAppThemeFromContext() || mockTheme;
+	const styles = createStyles(colors);
+=======
+>>>>>>> Stashed changes
 
   const excludedAddresses = useMemo(
     () =>
@@ -274,6 +377,31 @@ function TokenSelectModal({
       styles,
     ],
   );
+<<<<<<< Updated upstream
+			return (
+				<TouchableOpacity style={styles.resultRow} onPress={() => onItemPress(item)}>
+					<ListItem>
+						<ListItem.Content>
+							<ListItem.Icon>
+								<TokenIcon medium icon={item.iconUrl} symbol={item.symbol} />
+							</ListItem.Icon>
+							<ListItem.Body>
+								<ListItem.Title>{item.symbol}</ListItem.Title>
+								{item.name && <Text>{item.name}</Text>}
+							</ListItem.Body>
+							<ListItem.Amounts>
+								<ListItem.Amount>{balance}</ListItem.Amount>
+								{balanceFiat && <ListItem.FiatAmount>{balanceFiat}</ListItem.FiatAmount>}
+							</ListItem.Amounts>
+						</ListItem.Content>
+					</ListItem>
+				</TouchableOpacity>
+			);
+		},
+		[balances, accounts, selectedAddress, conversionRate, currentCurrency, tokenExchangeRates, onItemPress, styles]
+	);
+=======
+>>>>>>> Stashed changes
 
   const handleSearchPress = () => searchInput?.current?.focus();
 
@@ -287,7 +415,7 @@ function TokenSelectModal({
       const { address, symbol } = item;
       InteractionManager.runAfterInteractions(() => {
         Analytics.trackEventWithParameters(
-          ANALYTICS_EVENT_OPTS.CUSTOM_TOKEN_IMPORTED,
+          MetaMetricsEvents.CUSTOM_TOKEN_IMPORTED,
           { address, symbol, chain_id: chainId },
           true,
         );
@@ -357,6 +485,48 @@ function TokenSelectModal({
     ),
     [searchString, styles],
   );
+<<<<<<< Updated upstream
+	const renderFooter = useMemo(
+		() => (
+			<TouchableWithoutFeedback>
+				<Alert
+					renderIcon={() => (
+						<FAIcon name="info-circle" style={styles.footerIcon} color={colors.primary.default} size={15} />
+					)}
+				>
+					{(textStyle) => (
+						<Text style={textStyle}>
+							<Text reset bold>
+								{strings('swaps.cant_find_token')}
+							</Text>
+							{` ${strings('swaps.manually_pasting')}`}
+							{explorer.isValid && (
+								<Text reset>
+									{` ${strings('swaps.token_address_can_be_found')} `}
+									<Text reset link underline onPress={handleBlockExplorerPress}>
+										{explorer.name}
+									</Text>
+									.
+								</Text>
+							)}
+						</Text>
+					)}
+				</Alert>
+			</TouchableWithoutFeedback>
+		),
+		[explorer.isValid, explorer.name, handleBlockExplorerPress, styles, colors]
+	);
+
+	const renderEmptyList = useMemo(
+		() => (
+			<View style={styles.emptyList}>
+				<Text>{strings('swaps.no_tokens_result', { searchString })}</Text>
+			</View>
+		),
+		[searchString, styles]
+	);
+=======
+>>>>>>> Stashed changes
 
   const handleSearchTextChange = useCallback((text) => {
     setSearchString(text);
@@ -398,6 +568,7 @@ function TokenSelectModal({
               value={searchString}
               onChangeText={handleSearchTextChange}
               keyboardAppearance={themeAppearance}
+              testID={SWAP_SEARCH_TOKEN}
             />
             {searchString.length > 0 && (
               <TouchableOpacity onPress={handleClearSearch}>
@@ -500,6 +671,126 @@ function TokenSelectModal({
       </SafeAreaView>
     </Modal>
   );
+<<<<<<< Updated upstream
+	return (
+		<Modal
+			isVisible={isVisible}
+			onBackdropPress={dismiss}
+			onBackButtonPress={dismiss}
+			onSwipeComplete={dismiss}
+			swipeDirection="down"
+			propagateSwipe
+			avoidKeyboard
+			onModalHide={() => setSearchString('')}
+			style={styles.modal}
+			backdropColor={colors.overlay.default}
+			backdropOpacity={1}
+		>
+			<SafeAreaView style={styles.modalView}>
+				<ModalDragger />
+				<Text bold centered primary style={styles.modalTitle}>
+					{title}
+				</Text>
+				<TouchableWithoutFeedback onPress={handleSearchPress}>
+					<View style={styles.inputWrapper}>
+						<Icon name="ios-search" size={20} style={styles.searchIcon} />
+						<TextInput
+							ref={searchInput}
+							style={styles.input}
+							placeholder={strings('swaps.search_token')}
+							placeholderTextColor={colors.text.muted}
+							value={searchString}
+							onChangeText={handleSearchTextChange}
+							keyboardAppearance={themeAppearance}
+						/>
+						{searchString.length > 0 && (
+							<TouchableOpacity onPress={handleClearSearch}>
+								<Icon name="ios-close-circle" size={20} style={styles.searchIcon} />
+							</TouchableOpacity>
+						)}
+					</View>
+				</TouchableWithoutFeedback>
+				{shouldFetchToken ? (
+					<View style={styles.resultsView}>
+						{loadingTokenMetadata ? (
+							<View style={styles.loadingTokenView}>
+								<ActivityIndicator style={styles.loadingIndicator} />
+								<Text>{strings('swaps.gathering_token_details')}</Text>
+							</View>
+						) : tokenMetadata.error ? (
+							<View style={styles.emptyList}>
+								<Text>{strings('swaps.error_gathering_token_details')}</Text>
+							</View>
+						) : tokenMetadata.valid ? (
+							<View style={styles.resultRow}>
+								<ListItem>
+									<ListItem.Content>
+										<ListItem.Icon>
+											<TokenIcon
+												medium
+												icon={tokenMetadata.metadata.iconUrl}
+												symbol={tokenMetadata.metadata.symbol}
+											/>
+										</ListItem.Icon>
+										<ListItem.Body>
+											<ListItem.Title>{tokenMetadata.metadata.symbol}</ListItem.Title>
+											{tokenMetadata.metadata.name && <Text>{tokenMetadata.metadata.name}</Text>}
+										</ListItem.Body>
+										<ListItem.Amounts>
+											<TouchableOpacity
+												style={styles.importButton}
+												onPress={handleShowImportToken}
+											>
+												<Text small style={styles.importButtonText}>
+													{strings('swaps.Import')}
+												</Text>
+											</TouchableOpacity>
+										</ListItem.Amounts>
+									</ListItem.Content>
+								</ListItem>
+								<TokenImportModal
+									isVisible={isTokenImportVisible}
+									dismiss={hideTokenImportModal}
+									token={tokenMetadata.metadata}
+									onPressImport={() => handlePressImportToken(tokenMetadata.metadata)}
+								/>
+							</View>
+						) : (
+							<View style={styles.emptyList}>
+								<Text>
+									{strings('swaps.invalid_token_contract_address')}
+									{explorer.isValid && (
+										<Text reset>
+											{` ${strings('swaps.please_verify_on_explorer')} `}
+											<Text reset link underline onPress={handleBlockExplorerPress}>
+												{explorer.name}
+											</Text>
+											.
+										</Text>
+									)}
+								</Text>
+							</View>
+						)}
+					</View>
+				) : (
+					<FlatList
+						ref={list}
+						style={styles.resultsView}
+						keyboardDismissMode="none"
+						keyboardShouldPersistTaps="always"
+						data={tokenSearchResults}
+						renderItem={renderItem}
+						keyExtractor={(item) => item.address}
+						ListEmptyComponent={renderEmptyList}
+						ListFooterComponent={renderFooter}
+						ListFooterComponentStyle={[styles.resultRow, styles.footer]}
+					/>
+				)}
+			</SafeAreaView>
+		</Modal>
+	);
+=======
+>>>>>>> Stashed changes
 }
 
 TokenSelectModal.propTypes = {
@@ -539,31 +830,25 @@ TokenSelectModal.propTypes = {
    */
   chainId: PropTypes.string,
   /**
-   * Current Network provider
+   * Current network provider configuration
    */
-  provider: PropTypes.object,
+  providerConfig: PropTypes.object,
   /**
-   * Frequent RPC list from PreferencesController
+   * Network configurations
    */
-  frequentRpcList: PropTypes.array,
+  networkConfigurations: PropTypes.object,
 };
 
 const mapStateToProps = (state) => ({
-  accounts: state.engine.backgroundState.AccountTrackerController.accounts,
-  conversionRate:
-    state.engine.backgroundState.CurrencyRateController.conversionRate,
-  currentCurrency:
-    state.engine.backgroundState.CurrencyRateController.currentCurrency,
-  selectedAddress:
-    state.engine.backgroundState.PreferencesController.selectedAddress,
-  balances:
-    state.engine.backgroundState.TokenBalancesController.contractBalances,
-  tokenExchangeRates:
-    state.engine.backgroundState.TokenRatesController.contractExchangeRates,
-  chainId: state.engine.backgroundState.NetworkController.provider.chainId,
-  provider: state.engine.backgroundState.NetworkController.provider,
-  frequentRpcList:
-    state.engine.backgroundState.PreferencesController.frequentRpcList,
+  accounts: selectAccounts(state),
+  conversionRate: selectConversionRate(state),
+  currentCurrency: selectCurrentCurrency(state),
+  selectedAddress: selectSelectedAddress(state),
+  tokenExchangeRates: selectContractExchangeRates(state),
+  balances: selectContractBalances(state),
+  chainId: selectChainId(state),
+  providerConfig: selectProviderConfig(state),
+  networkConfigurations: selectNetworkConfigurations(state),
 });
 
 export default connect(mapStateToProps)(TokenSelectModal);

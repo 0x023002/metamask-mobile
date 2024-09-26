@@ -1,6 +1,6 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import Engine from '../../core/Engine';
-import { BN } from '@metamask/controllers';
+import { BN } from '@metamask/assets-controllers';
 
 /**
  * Hook to handle the balance of ERC20 tokens
@@ -33,6 +33,15 @@ const useTokenBalance = (
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   };
+<<<<<<< Updated upstream
+	const fetchBalance = async (tokenAddress: string, userAddress: string): Promise<void> => {
+		TokenBalancesController.getERC20BalanceOf(tokenAddress, userAddress)
+			.then((balance: BN) => setTokenBalance(balance))
+			.catch(() => setError(true))
+			.finally(() => setLoading(false));
+	};
+=======
+>>>>>>> Stashed changes
 
   useEffect(() => {
     fetchBalance(requestedTokenAddress, userCurrentAddress);

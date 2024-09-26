@@ -15,6 +15,16 @@ export const colors = {
   yellow: '#FFD33D',
   transparent: 'transparent',
   shadow: '#6a737d',
+<<<<<<< Updated upstream
+	black: '#24292E',
+	blackTransparent: 'rgba(0, 0, 0, 0.5)',
+	white: '#FFFFFF',
+	whiteTransparent: 'rgba(255, 255, 255, 0.7)',
+	yellow: '#FFD33D',
+	transparent: 'transparent',
+	shadow: '#6a737d',
+=======
+>>>>>>> Stashed changes
 };
 
 /**
@@ -27,6 +37,15 @@ export const baseStyles: Record<string, ViewStyle> = {
   flexStatic: {
     flex: 0,
   },
+<<<<<<< Updated upstream
+	flexGrow: {
+		flex: 1,
+	},
+	flexStatic: {
+		flex: 0,
+	},
+=======
+>>>>>>> Stashed changes
 };
 
 /**
@@ -49,4 +68,23 @@ export const fontStyles: Record<string, TextStyle> = {
     fontFamily: 'EuclidCircularB-Bold',
     fontWeight: '600',
   },
+<<<<<<< Updated upstream
+	normal: {
+		fontFamily: 'EuclidCircularB-Regular',
+		fontWeight: '400',
+	},
+	light: {
+		fontFamily: 'EuclidCircularB-Regular',
+		fontWeight: '300',
+	},
+	thin: {
+		fontFamily: 'EuclidCircularB-Regular',
+		fontWeight: '100',
+	},
+	bold: {
+		fontFamily: 'EuclidCircularB-Bold',
+		fontWeight: '600',
+	},
+=======
+>>>>>>> Stashed changes
 };

@@ -48,6 +48,41 @@ const createStyles = (colors) =>
       marginHorizontal: 18,
     },
   });
+<<<<<<< Updated upstream
+	StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: colors.background.default,
+		},
+		frame: {
+			width: 200,
+			height: 200,
+			alignSelf: 'center',
+			marginTop: 60,
+		},
+		content: {
+			flex: 1,
+			marginHorizontal: 18,
+			justifyContent: 'center',
+			marginVertical: 30,
+		},
+		title: {
+			fontSize: 18,
+			color: colors.text.default,
+			marginBottom: 10,
+			...fontStyles.bold,
+		},
+		text: {
+			fontSize: 12,
+			color: colors.text.default,
+			...fontStyles.normal,
+		},
+		buttonContainer: {
+			marginHorizontal: 18,
+		},
+	});
+=======
+>>>>>>> Stashed changes
 
 const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
 
@@ -56,6 +91,11 @@ const OfflineMode = ({ navigation, infuraBlocked }) => {
   const styles = createStyles(colors);
 
   const netinfo = NetInfo.useNetInfo();
+<<<<<<< Updated upstream
+	const { colors } = useAppThemeFromContext() || mockTheme;
+	const styles = createStyles(colors);
+
+	const netinfo = NetInfo.useNetInfo();
 
   const tryAgain = () => {
     if (netinfo?.isConnected) {
@@ -70,6 +110,22 @@ const OfflineMode = ({ navigation, infuraBlocked }) => {
     });
   };
 
+=======
+
+  const tryAgain = () => {
+    if (netinfo?.isConnected) {
+      navigation.pop();
+    }
+  };
+
+  const learnMore = () => {
+    navigation.navigate('Webview', {
+      screen: 'SimpleWebview',
+      params: { url: AppConstants.URLS.CONNECTIVITY_ISSUES },
+    });
+  };
+
+>>>>>>> Stashed changes
   const action = () => {
     if (infuraBlocked) {
       learnMore();

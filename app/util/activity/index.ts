@@ -16,6 +16,12 @@ export const isFromOrToSelectedAddress = (
 ): boolean =>
   toLowerCaseEquals(safeToChecksumAddress(from), selectedAddress) ||
   toLowerCaseEquals(safeToChecksumAddress(to), selectedAddress);
+<<<<<<< Updated upstream
+export const isFromOrToSelectedAddress = (from: string, to: string, selectedAddress: string): boolean =>
+	toLowerCaseEquals(safeToChecksumAddress(from), selectedAddress) ||
+	toLowerCaseEquals(safeToChecksumAddress(to), selectedAddress);
+=======
+>>>>>>> Stashed changes
 
 /**
  * Determines if a transaction was executed in the current chain/network
@@ -30,6 +36,11 @@ export const isFromCurrentChain = (
   chainId: string,
 ): boolean =>
   chainId === tx.chainId || (!tx.chainId && networkId === tx.networkID);
+<<<<<<< Updated upstream
+export const isFromCurrentChain = (tx: any, networkId: string, chainId: string): boolean =>
+	chainId === tx.chainId || (!tx.chainId && networkId === tx.networkID);
+=======
+>>>>>>> Stashed changes
 
 /**
  * Sorts an array of transaction based on the timestamp
@@ -38,6 +49,10 @@ export const isFromCurrentChain = (
  */
 export const sortTransactions = (transactions: any[]): any[] =>
   transactions.sort((a, b) => (a.time > b.time ? -1 : b.time > a.time ? 1 : 0));
+<<<<<<< Updated upstream
+	transactions.sort((a, b) => (a.time > b.time ? -1 : b.time > a.time ? 1 : 0));
+=======
+>>>>>>> Stashed changes
 
 /**
  * Filter based on the following conditions:
@@ -77,4 +92,29 @@ export const filterByAddressAndNetwork = (
       : true;
   }
   return false;
+<<<<<<< Updated upstream
+	tx: any,
+	tokens: any[],
+	selectedAddress: string,
+	networkId: string,
+	chainId: string
+): boolean => {
+	const {
+		transaction: { from, to },
+		isTransfer,
+		transferInformation,
+	} = tx;
+
+	if (
+		isFromOrToSelectedAddress(from, to, selectedAddress) &&
+		isFromCurrentChain(tx, networkId, chainId) &&
+		tx.status !== TX_UNAPPROVED
+	) {
+		return isTransfer
+			? !!tokens.find(({ address }) => toLowerCaseEquals(address, transferInformation.contractAddress))
+			: true;
+	}
+	return false;
+=======
+>>>>>>> Stashed changes
 };
